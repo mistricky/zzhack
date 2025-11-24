@@ -5,6 +5,7 @@ mod du;
 mod echo;
 mod fetch;
 mod ls;
+mod pwd;
 mod render;
 mod stat;
 
@@ -23,6 +24,7 @@ pub use du::DuCommand;
 pub use echo::EchoCommand;
 pub use fetch::FetchCommand;
 pub use ls::LsCommand;
+pub use pwd::PwdCommand;
 pub use render::RenderCommand;
 pub use stat::StatCommand;
 
@@ -51,6 +53,7 @@ pub fn command_handlers() -> Vec<Box<dyn CommandHandler>> {
         Box::new(FetchCommand),
         Box::new(RenderCommand),
         Box::new(ClearCommand),
+        Box::new(PwdCommand),
     ]
 }
 
