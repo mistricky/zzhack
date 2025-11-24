@@ -1,10 +1,35 @@
-use crate::commands::{line_error, line_out, CommandContext, CommandHandler, CommandOutcome};
+use crate::cache_service::CacheService;
+use crate::commands::{CommandContext, CommandHandler};
 use async_trait::async_trait;
 use shell_parser::CommandSpec;
+use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::{spawn_local, JsFuture};
 
 pub struct FetchCommand;
+
+pub async fn fetch_text_with_cache(uri: &str, cache: &Rc<CacheService>) -> Result<String, String> {
+    let uri_refresh = uri.to_string();
+    let cache_for_refresh = cache.clone();
+    spawn_local(async move {
+        if let Ok(bytes) = fetch_bytes(&uri_refresh).await {
+            let _ = cache_for_refresh.put(&uri_refresh, bytes).await;
+        }
+    });
+
+    if let Ok(Some(bytes)) = cache.get(uri).await {
+        return Ok(bytes_to_text(&bytes));
+    }
+
+    match fetch_bytes(uri).await {
+        Ok(bytes) => {
+            let text = bytes_to_text(&bytes);
+            let _ = cache.put(uri, bytes).await;
+            Ok(text)
+        }
+        Err(_) => Err(format!("failed to fetch {uri}")),
+    }
+}
 
 #[async_trait(?Send)]
 impl CommandHandler for FetchCommand {
@@ -16,57 +41,26 @@ impl CommandHandler for FetchCommand {
         CommandSpec::new("fetch").with_min_args(1).with_max_args(1)
     }
 
-    async fn run(&self, args: &[String], ctx: &CommandContext) -> CommandOutcome {
+    async fn run(&self, args: &[String], ctx: &CommandContext) {
         let Some(uri) = args.get(0) else {
-            return CommandOutcome {
-                lines: vec![line_error("fetch: missing uri".into())],
-                new_cwd: None,
-            };
+            ctx.terminal.push_error("fetch: missing uri");
+            return;
         };
 
         let Some(cache) = ctx.cache.clone() else {
-            return CommandOutcome {
-                lines: vec![line_error(
-                    "fetch: cache unavailable (OPFS init failed)".into(),
-                )],
-                new_cwd: None,
-            };
+            ctx.terminal
+                .push_error("fetch: cache unavailable (OPFS init failed)");
+            return;
         };
 
-        let uri_refresh = uri.clone();
-        let cache_for_refresh = cache.clone();
-        spawn_local(async move {
-            if let Ok(bytes) = fetch_bytes(&uri_refresh).await {
-                let _ = cache_for_refresh.put(&uri_refresh, bytes).await;
-            }
-        });
-
-        if let Ok(Some(bytes)) = cache.get(uri).await {
-            let text = bytes_to_text(&bytes);
-            return CommandOutcome {
-                lines: vec![line_out(text)],
-                new_cwd: None,
-            };
-        }
-
-        match fetch_bytes(uri).await {
-            Ok(bytes) => {
-                let text = bytes_to_text(&bytes);
-                let _ = cache.put(uri, bytes).await;
-                CommandOutcome {
-                    lines: vec![line_out(text)],
-                    new_cwd: None,
-                }
-            }
-            Err(_) => CommandOutcome {
-                lines: vec![line_error(format!("fetch: failed to fetch {uri}"))],
-                new_cwd: None,
-            },
-        }
+        match fetch_text_with_cache(uri, &cache).await {
+            Ok(text) => ctx.terminal.push_text(text),
+            Err(err) => ctx.terminal.push_error(format!("fetch: {err}")),
+        };
     }
 }
 
-async fn fetch_bytes(url: &str) -> Result<Vec<u8>, wasm_bindgen::JsValue> {
+pub(crate) async fn fetch_bytes(url: &str) -> Result<Vec<u8>, wasm_bindgen::JsValue> {
     let window = web_sys::window().ok_or_else(|| js_sys::Error::new("no window"))?;
     let resp_value = JsFuture::from(window.fetch_with_str(url)).await?;
     let resp: web_sys::Response = resp_value.dyn_into()?;
@@ -80,6 +74,6 @@ async fn fetch_bytes(url: &str) -> Result<Vec<u8>, wasm_bindgen::JsValue> {
     Ok(array.to_vec())
 }
 
-fn bytes_to_text(bytes: &[u8]) -> String {
+pub(crate) fn bytes_to_text(bytes: &[u8]) -> String {
     String::from_utf8_lossy(bytes).to_string()
 }

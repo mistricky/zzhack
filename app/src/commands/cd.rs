@@ -1,4 +1,4 @@
-use crate::commands::{line_error, CommandContext, CommandHandler, CommandOutcome};
+use crate::commands::{CommandContext, CommandHandler};
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
 use async_trait::async_trait;
 use shell_parser::CommandSpec;
@@ -15,28 +15,22 @@ impl CommandHandler for CdCommand {
         CommandSpec::new("cd").with_max_args(1)
     }
 
-    async fn run(&self, args: &[String], ctx: &CommandContext) -> CommandOutcome {
+    async fn run(&self, args: &[String], ctx: &CommandContext) {
         let target = args.get(0).map(String::as_str).unwrap_or("/");
-        let path = resolve_path(&ctx.cwd, target);
+        let path = resolve_path(&ctx.terminal.cwd(), target);
         match find_node(&ctx.vfs, &path) {
-            Some(node) if node.kind == VfsKind::Directory => CommandOutcome {
-                lines: Vec::new(),
-                new_cwd: Some(path),
-            },
-            Some(_) => CommandOutcome {
-                lines: vec![line_error(format!(
-                    "cd: {}: not a directory",
-                    format_path(&path)
-                ))],
-                new_cwd: None,
-            },
-            None => CommandOutcome {
-                lines: vec![line_error(format!(
-                    "cd: {}: no such directory",
-                    format_path(&path)
-                ))],
-                new_cwd: None,
-            },
+            Some(node) if node.kind == VfsKind::Directory => {
+                ctx.terminal.set_cwd(path.clone());
+                // no additional output
+            }
+            Some(_) => {
+                ctx.terminal
+                    .push_error(format!("cd: {}: not a directory", format_path(&path)));
+            }
+            None => {
+                ctx.terminal
+                    .push_error(format!("cd: {}: no such directory", format_path(&path)));
+            }
         }
     }
 }

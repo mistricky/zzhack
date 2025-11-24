@@ -68,6 +68,7 @@ pub fn find_node<'a>(root: &'a VfsNode, path: &[String]) -> Option<&'a VfsNode> 
     Some(node)
 }
 
+#[allow(dead_code)]
 pub fn list_children(node: &VfsNode) -> Option<Vec<String>> {
     node.children.as_ref().map(|children| {
         let mut names: Vec<String> = children

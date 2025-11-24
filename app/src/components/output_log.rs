@@ -1,5 +1,6 @@
-use crate::types::TermLine;
+use crate::types::{OutputKind, TermLine};
 use yew::prelude::*;
+use yew::AttrValue;
 
 #[derive(Properties, PartialEq)]
 pub struct OutputLogProps {
@@ -16,13 +17,27 @@ pub fn output_log(props: &OutputLogProps) -> Html {
 }
 
 fn render_line(idx: usize, line: &TermLine) -> Html {
+    let content = match line.kind {
+        OutputKind::Text => html! { &line.body },
+        OutputKind::Html => Html::from_html_unchecked(AttrValue::from(line.body.clone())),
+        OutputKind::Error => Html::from_html_unchecked(AttrValue::from(line.body.clone())),
+    };
+
+    let text_class = match line.kind {
+        OutputKind::Error => "text-rose-300",
+        _ => {
+            if line.accent {
+                "text-emerald-300"
+            } else {
+                "text-slate-100"
+            }
+        }
+    };
+
     html! {
         <div class="flex gap-3 leading-relaxed" key={idx.to_string()}>
             <span class="text-slate-500">{ &line.prompt }</span>
-            <span class={classes!(
-                if line.accent { "text-emerald-300" } else { "text-slate-100" },
-                "break-words"
-            )}>{ &line.body }</span>
+            <span class={classes!(text_class, "break-words")}>{ content }</span>
         </div>
     }
 }
