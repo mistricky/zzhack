@@ -32,7 +32,7 @@ enum CommandKind {
     /// Generate JSON metadata describing the data/ directory
     MetadataGenerate {
         /// Path to the data directory (defaults to ./app/data)
-        #[arg(long, default_value = "app/data")]
+        #[arg(long, default_value = "../data")]
         root: PathBuf,
     },
 }
