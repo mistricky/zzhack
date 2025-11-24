@@ -1,0 +1,40 @@
+[package]
+name = "zzhack-v6"
+version = "0.1.0"
+edition = "2021"
+description = "Template for starting a Yew project using Trunk"
+readme = "README.md"
+repository = "https://github.com/yewstack/yew-trunk-minimal-template"
+license = "MIT OR Apache-2.0"
+keywords = ["yew", "trunk"]
+categories = ["gui", "wasm", "web-programming"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+yew = { version="0.21", features=["csr"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing-web = "0.1"
+web-sys = { version = "0.3", features = [
+    "Window",
+    "Response",
+    "Request",
+    "Navigator",
+    "StorageManager",
+    "FileSystemDirectoryHandle",
+    "FileSystemFileHandle",
+    "FileSystemGetFileOptions",
+    "FileSystemWritableFileStream",
+    "File",
+    "ReadableStream",
+    "Blob",
+    "AbortController",
+    "HtmlInputElement"
+] }
+shell_parser = { path = "../shell_parser" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+wasm-bindgen = "0.2"
+async-trait = "0.1"

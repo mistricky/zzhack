@@ -1,0 +1,8 @@
+[build]
+target = "index.html"
+dist = "dist"
+
+# [[hooks]]
+# stage = "pre_build" 
+# command = "echo '123'"
+# command_arguments = []
