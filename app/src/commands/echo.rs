@@ -1,4 +1,4 @@
-use crate::commands::{line_out, CommandContext, CommandHandler, CommandOutcome};
+use crate::commands::{CommandContext, CommandHandler};
 use async_trait::async_trait;
 use shell_parser::CommandSpec;
 use web_sys::console;
@@ -15,12 +15,9 @@ impl CommandHandler for EchoCommand {
         CommandSpec::new("echo")
     }
 
-    async fn run(&self, args: &[String], _ctx: &CommandContext) -> CommandOutcome {
+    async fn run(&self, args: &[String], ctx: &CommandContext) {
         let msg = args.join(" ");
         console::log_1(&msg.clone().into());
-        CommandOutcome {
-            lines: vec![line_out(msg)],
-            new_cwd: None,
-        }
+        ctx.terminal.push_text(msg);
     }
 }

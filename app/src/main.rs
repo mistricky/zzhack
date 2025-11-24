@@ -2,6 +2,8 @@ mod app;
 mod cache_service;
 mod commands;
 mod components;
+mod markdown_renderer;
+mod terminal;
 mod types;
 mod vfs_data;
 

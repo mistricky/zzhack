@@ -1,7 +1,8 @@
 use crate::cache_service::CacheService;
 use crate::commands::{command_handlers, execute_command, CommandContext, CommandHandler};
 use crate::components::TerminalWindow;
-use crate::types::TermLine;
+use crate::terminal::Terminal;
+use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{format_path, load_vfs, VfsNode};
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
@@ -9,9 +10,8 @@ use yew::prelude::*;
 
 #[derive(Clone)]
 struct SubmitState {
-    lines: UseStateHandle<Vec<TermLine>>,
+    terminal: Terminal,
     input: UseStateHandle<String>,
-    cwd: UseStateHandle<Vec<String>>,
     cache: UseStateHandle<Option<Rc<CacheService>>>,
     vfs: Rc<VfsNode>,
     handlers: Rc<Vec<Box<dyn CommandHandler>>>,
@@ -32,9 +32,8 @@ pub fn app() -> Html {
     };
 
     let submit_state = SubmitState {
-        lines: lines.clone(),
+        terminal: Terminal::new(lines.clone(), cwd.clone()),
         input: input.clone(),
-        cwd: cwd.clone(),
         cache: cache.clone(),
         vfs: vfs.clone(),
         handlers: handlers.clone(),
@@ -49,11 +48,18 @@ pub fn app() -> Html {
         <TerminalWindow
             title={"zzhack-v6 terminal".to_string()}
             status={"live".to_string()}
-            lines={(*lines).clone()}
+            lines={submit_state.terminal.snapshot()}
             input={(*input).clone()}
             prompt={format!(
                 "guest@zzhack-v6:{}",
-                if cwd.is_empty() { "/".into() } else { format_path(&cwd) }
+                {
+                    let cwd_now = submit_state.terminal.cwd();
+                    if cwd_now.is_empty() {
+                        "/".into()
+                    } else {
+                        format_path(&cwd_now)
+                    }
+                }
             )}
             on_input={on_input}
             on_submit={on_submit}
@@ -73,11 +79,11 @@ fn handle_submit(state: SubmitState) {
 }
 
 async fn process_command(state: SubmitState, trimmed: String) {
-    let mut next = (*state.lines).clone();
-    next.push(TermLine {
-        prompt: format!("{}$", format_path(&state.cwd)),
+    state.terminal.push_line(TermLine {
+        prompt: format!("{}$", format_path(&state.terminal.cwd())),
         body: trimmed.clone(),
         accent: false,
+        kind: OutputKind::Text,
     });
 
     let cache_handle = if let Some(existing) = state.cache.as_ref() {
@@ -97,49 +103,63 @@ async fn process_command(state: SubmitState, trimmed: String) {
     };
 
     let ctx = CommandContext {
-        cwd: (*state.cwd).clone(),
         vfs: state.vfs.clone(),
         cache: cache_handle,
+        terminal: state.terminal.clone(),
     };
 
-    let result = execute_command(&trimmed, ctx, state.handlers.as_ref()).await;
-    next.extend(result.lines);
-    state.lines.set(next);
-
-    if let Some(new_cwd) = result.new_cwd {
-        state.cwd.set(new_cwd);
-    }
+    execute_command(&trimmed, ctx, state.handlers.as_ref()).await;
 
     // restore cleared input (kept empty)
     state.input.set(String::new());
 }
 
 fn demo_lines() -> Vec<TermLine> {
-    vec![
+    let mut lines = vec![
         TermLine {
             prompt: "$".into(),
             body: "trunk serve --open --release".into(),
             accent: false,
+            kind: OutputKind::Text,
         },
         TermLine {
             prompt: ">".into(),
             body: "watching for file changes...".into(),
             accent: true,
+            kind: OutputKind::Text,
         },
         TermLine {
             prompt: ">".into(),
             body: "compiling to wasm32-unknown-unknown".into(),
             accent: false,
+            kind: OutputKind::Text,
         },
         TermLine {
             prompt: ">".into(),
             body: "build finished in 1.2s; output -> dist/".into(),
             accent: true,
+            kind: OutputKind::Text,
         },
         TermLine {
             prompt: "$".into(),
             body: "open http://127.0.0.1:8080 to view".into(),
             accent: false,
+            kind: OutputKind::Text,
         },
-    ]
+    ];
+
+    lines.push(TermLine {
+        prompt: ">".into(),
+        body: r#"<strong class="text-amber-300">HTML output enabled</strong>"#.into(),
+        accent: false,
+        kind: OutputKind::Html,
+    });
+    lines.push(TermLine {
+        prompt: "!".into(),
+        body: r#"<em class="text-rose-300">errors can be styled too</em>"#.into(),
+        accent: true,
+        kind: OutputKind::Error,
+    });
+
+    lines
 }
