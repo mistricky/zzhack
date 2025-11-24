@@ -4,42 +4,155 @@
   "kind": "directory",
   "extension": null,
   "size": null,
-  "modified": "2025-11-21T09:50:28.146020001Z",
+  "modified": "2025-11-24T12:58:04.950119417Z",
   "read_only": false,
-  "children_count": 3,
+  "children_count": 7,
   "children": [
     {
-      "name": "bar.md",
-      "path": "bar.md",
+      "name": "a.js",
+      "path": "a.js",
       "kind": "file",
-      "extension": "md",
-      "size": 6,
-      "modified": "2025-11-21T09:19:17.926629736Z",
+      "extension": "js",
+      "size": 86,
+      "modified": "2025-11-24T12:58:04.949266211Z",
       "read_only": false,
       "children_count": null,
       "children": null
     },
     {
-      "name": "foo.md",
-      "path": "foo.md",
+      "name": "about",
+      "path": "about",
+      "kind": "directory",
+      "extension": null,
+      "size": null,
+      "modified": "2025-11-24T12:58:04.950000253Z",
+      "read_only": false,
+      "children_count": 2,
+      "children": [
+        {
+          "name": "demo.md",
+          "path": "about/demo.md",
+          "kind": "file",
+          "extension": "md",
+          "size": 466,
+          "modified": "2025-11-24T12:58:04.949959717Z",
+          "read_only": false,
+          "children_count": null,
+          "children": null
+        },
+        {
+          "name": "index.md",
+          "path": "about/index.md",
+          "kind": "file",
+          "extension": "md",
+          "size": 598,
+          "modified": "2025-11-24T12:58:04.950000253Z",
+          "read_only": false,
+          "children_count": null,
+          "children": null
+        }
+      ]
+    },
+    {
+      "name": "green_theme_demo.md",
+      "path": "green_theme_demo.md",
       "kind": "file",
       "extension": "md",
-      "size": 0,
-      "modified": "2025-11-21T09:18:55.244156661Z",
+      "size": 2389,
+      "modified": "2025-11-24T12:58:04.950000253Z",
       "read_only": false,
       "children_count": null,
       "children": null
     },
     {
-      "name": "hello.md",
-      "path": "hello.md",
+      "name": "index.md",
+      "path": "index.md",
       "kind": "file",
       "extension": "md",
-      "size": 9,
-      "modified": "2025-11-21T09:19:10.113232145Z",
+      "size": 766,
+      "modified": "2025-11-24T12:58:04.950000253Z",
       "read_only": false,
       "children_count": null,
       "children": null
+    },
+    {
+      "name": "links",
+      "path": "links",
+      "kind": "directory",
+      "extension": null,
+      "size": null,
+      "modified": "2025-11-24T12:58:04.950119417Z",
+      "read_only": false,
+      "children_count": 2,
+      "children": [
+        {
+          "name": "demo.md",
+          "path": "links/demo.md",
+          "kind": "file",
+          "extension": "md",
+          "size": 1215,
+          "modified": "2025-11-24T12:58:04.950000253Z",
+          "read_only": false,
+          "children_count": null,
+          "children": null
+        },
+        {
+          "name": "resources.md",
+          "path": "links/resources.md",
+          "kind": "file",
+          "extension": "md",
+          "size": 1215,
+          "modified": "2025-11-24T12:58:04.950119417Z",
+          "read_only": false,
+          "children_count": null,
+          "children": null
+        }
+      ]
+    },
+    {
+      "name": "metadata_demo.md",
+      "path": "metadata_demo.md",
+      "kind": "file",
+      "extension": "md",
+      "size": 2219,
+      "modified": "2025-11-24T12:58:04.950119417Z",
+      "read_only": false,
+      "children_count": null,
+      "children": null
+    },
+    {
+      "name": "posts",
+      "path": "posts",
+      "kind": "directory",
+      "extension": null,
+      "size": null,
+      "modified": "2025-11-24T12:58:04.950208545Z",
+      "read_only": false,
+      "children_count": 2,
+      "children": [
+        {
+          "name": "blog.md",
+          "path": "posts/blog.md",
+          "kind": "file",
+          "extension": "md",
+          "size": 753,
+          "modified": "2025-11-24T12:58:04.950119417Z",
+          "read_only": false,
+          "children_count": null,
+          "children": null
+        },
+        {
+          "name": "demo.md",
+          "path": "posts/demo.md",
+          "kind": "file",
+          "extension": "md",
+          "size": 753,
+          "modified": "2025-11-24T12:58:04.950208545Z",
+          "read_only": false,
+          "children_count": null,
+          "children": null
+        }
+      ]
     }
   ]
 }
