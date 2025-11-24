@@ -1,0 +1,45 @@
+{
+  "name": "data",
+  "path": ".",
+  "kind": "directory",
+  "extension": null,
+  "size": null,
+  "modified": "2025-11-21T09:50:28.146020001Z",
+  "read_only": false,
+  "children_count": 3,
+  "children": [
+    {
+      "name": "bar.md",
+      "path": "bar.md",
+      "kind": "file",
+      "extension": "md",
+      "size": 6,
+      "modified": "2025-11-21T09:19:17.926629736Z",
+      "read_only": false,
+      "children_count": null,
+      "children": null
+    },
+    {
+      "name": "foo.md",
+      "path": "foo.md",
+      "kind": "file",
+      "extension": "md",
+      "size": 0,
+      "modified": "2025-11-21T09:18:55.244156661Z",
+      "read_only": false,
+      "children_count": null,
+      "children": null
+    },
+    {
+      "name": "hello.md",
+      "path": "hello.md",
+      "kind": "file",
+      "extension": "md",
+      "size": 9,
+      "modified": "2025-11-21T09:19:10.113232145Z",
+      "read_only": false,
+      "children_count": null,
+      "children": null
+    }
+  ]
+}

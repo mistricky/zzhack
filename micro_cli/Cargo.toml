@@ -1,0 +1,11 @@
+[package]
+name = "micro_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+thiserror = "1"
+micro_cli_derive = { path = "../micro_cli_derive" }
+
+[dev-dependencies]
+shell_parser = { path = "../shell_parser" }
