@@ -9,6 +9,7 @@ pub struct TerminalWindowProps {
     pub prompt: String,
     pub on_input: Callback<String>,
     pub on_submit: Callback<()>,
+    pub on_history_nav: Callback<crate::components::HistoryDirection>,
 }
 
 #[function_component(TerminalWindow)]
@@ -24,6 +25,7 @@ pub fn terminal_window(props: &TerminalWindowProps) -> Html {
                         value={props.input.clone()}
                         on_input={props.on_input.clone()}
                         on_submit={props.on_submit.clone()}
+                        on_history_nav={props.on_history_nav.clone()}
                     />
                 </div>
             </div>
