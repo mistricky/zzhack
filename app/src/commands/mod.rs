@@ -13,8 +13,7 @@ use crate::cache_service::CacheService;
 use crate::terminal::Terminal;
 use crate::vfs_data::VfsNode;
 use async_trait::async_trait;
-use shell_parser::{CommandSpec, ShellParser};
-use std::collections::HashMap;
+use shell_parser::CommandSpec;
 use std::rc::Rc;
 
 pub use cat::CatCommand;
@@ -55,45 +54,4 @@ pub fn command_handlers() -> Vec<Box<dyn CommandHandler>> {
         Box::new(ClearCommand),
         Box::new(PwdCommand),
     ]
-}
-
-pub async fn execute_command(
-    input: &str,
-    ctx: CommandContext,
-    handlers: &[Box<dyn CommandHandler>],
-) {
-    let mut specs = Vec::with_capacity(handlers.len());
-    let mut map: HashMap<&str, &Box<dyn CommandHandler>> = HashMap::new();
-    for handler in handlers {
-        specs.push(handler.spec());
-        map.insert(handler.name(), handler);
-    }
-
-    let parser = ShellParser::with_commands(specs);
-
-    let parsed = match parser.parse(input) {
-        Ok(commands) => commands.into_iter().next(),
-        Err(err) => {
-            ctx.terminal.push_error(format!("parse error: {:?}", err));
-            return;
-        }
-    };
-
-    let Some(command) = parsed else {
-        ctx.terminal.push_error("empty command");
-        return;
-    };
-
-    let handler = match map.get(command.name.as_str()) {
-        Some(h) => h,
-        None => {
-            ctx.terminal.push_error(format!(
-                "unknown command: {} (TODO: implement)",
-                command.name
-            ));
-            return;
-        }
-    };
-
-    handler.run(&command.args, &ctx).await;
 }

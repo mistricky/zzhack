@@ -1,5 +1,11 @@
+use crate::cache_service::CacheService;
+use crate::commands::{CommandContext, CommandHandler};
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::format_path;
+use crate::vfs_data::VfsNode;
+use shell_parser::{ShellParseError, ShellParser};
+use std::collections::HashMap;
+use std::rc::Rc;
 use yew::UseStateHandle;
 
 #[derive(Clone)]
@@ -50,15 +56,6 @@ impl Terminal {
         });
     }
 
-    pub fn push_error_html(&self, body: impl Into<String>) {
-        self.push_line(TermLine {
-            prompt: String::new(),
-            body: body.into(),
-            accent: true,
-            kind: OutputKind::Error,
-        });
-    }
-
     #[allow(dead_code)]
     pub fn extend(&self, lines: impl IntoIterator<Item = TermLine>) {
         let mut next = self.snapshot();
@@ -85,5 +82,60 @@ impl Terminal {
         } else {
             format!("guest@zzhack {} >", path)
         }
+    }
+
+    pub async fn execute_command(
+        &self,
+        input: &str,
+        vfs: Rc<VfsNode>,
+        cache: Option<Rc<CacheService>>,
+        handlers: &[Box<dyn CommandHandler>],
+    ) {
+        let ctx = CommandContext {
+            vfs,
+            cache,
+            terminal: self.clone(),
+        };
+
+        let mut specs = Vec::with_capacity(handlers.len());
+        let mut map: HashMap<&str, &Box<dyn CommandHandler>> = HashMap::new();
+        for handler in handlers {
+            specs.push(handler.spec());
+            map.insert(handler.name(), handler);
+        }
+
+        let parser = ShellParser::with_commands(specs);
+
+        let parsed = match parser.parse(input) {
+            Ok(commands) => commands.into_iter().next(),
+            Err(err) => {
+                let message = match err {
+                    ShellParseError::UnknownCommand { name, .. } => {
+                        format!("Unknown command {name}")
+                    }
+                    other => format!("parse error: {other}"),
+                };
+                ctx.terminal.push_error(message);
+                return;
+            }
+        };
+
+        let Some(command) = parsed else {
+            ctx.terminal.push_error("empty command");
+            return;
+        };
+
+        let handler = match map.get(command.name.as_str()) {
+            Some(h) => h,
+            None => {
+                ctx.terminal.push_error(format!(
+                    "unknown command: {} (TODO: implement)",
+                    command.name
+                ));
+                return;
+            }
+        };
+
+        handler.run(&command.args, &ctx).await;
     }
 }
