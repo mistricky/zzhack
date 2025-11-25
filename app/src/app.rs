@@ -20,7 +20,7 @@ struct SubmitState {
 #[function_component(App)]
 pub fn app() -> Html {
     let vfs = use_memo((), |_| load_vfs());
-    let lines = use_state(demo_lines);
+    let lines = use_state(Vec::<TermLine>::new);
     let input = use_state(String::new);
     let cwd = use_state(Vec::<String>::new);
     let cache = use_state(|| Option::<Rc<CacheService>>::None);
@@ -102,54 +102,4 @@ async fn process_command(state: SubmitState, trimmed: String) {
 
     // restore cleared input (kept empty)
     state.input.set(String::new());
-}
-
-fn demo_lines() -> Vec<TermLine> {
-    let mut lines = vec![
-        TermLine {
-            prompt: "$".into(),
-            body: "trunk serve --open --release".into(),
-            accent: false,
-            kind: OutputKind::Text,
-        },
-        TermLine {
-            prompt: ">".into(),
-            body: "watching for file changes...".into(),
-            accent: true,
-            kind: OutputKind::Text,
-        },
-        TermLine {
-            prompt: ">".into(),
-            body: "compiling to wasm32-unknown-unknown".into(),
-            accent: false,
-            kind: OutputKind::Text,
-        },
-        TermLine {
-            prompt: ">".into(),
-            body: "build finished in 1.2s; output -> dist/".into(),
-            accent: true,
-            kind: OutputKind::Text,
-        },
-        TermLine {
-            prompt: "$".into(),
-            body: "open http://127.0.0.1:8080 to view".into(),
-            accent: false,
-            kind: OutputKind::Text,
-        },
-    ];
-
-    lines.push(TermLine {
-        prompt: ">".into(),
-        body: r#"<strong class="text-amber-300">HTML output enabled</strong>"#.into(),
-        accent: false,
-        kind: OutputKind::Html,
-    });
-    lines.push(TermLine {
-        prompt: "!".into(),
-        body: r#"<em class="text-rose-300">errors can be styled too</em>"#.into(),
-        accent: true,
-        kind: OutputKind::Error,
-    });
-
-    lines
 }
