@@ -1,4 +1,5 @@
 use crate::types::{OutputKind, TermLine};
+use crate::vfs_data::format_path;
 use yew::UseStateHandle;
 
 #[derive(Clone)]
@@ -24,7 +25,7 @@ impl Terminal {
 
     pub fn push_text(&self, body: impl Into<String>) {
         self.push_line(TermLine {
-            prompt: ">".into(),
+            prompt: String::new(),
             body: body.into(),
             accent: false,
             kind: OutputKind::Text,
@@ -33,7 +34,7 @@ impl Terminal {
 
     pub fn push_error(&self, body: impl Into<String>) {
         self.push_line(TermLine {
-            prompt: "!".into(),
+            prompt: String::new(),
             body: body.into(),
             accent: true,
             kind: OutputKind::Error,
@@ -42,7 +43,7 @@ impl Terminal {
 
     pub fn push_html(&self, body: impl Into<String>) {
         self.push_line(TermLine {
-            prompt: ">".into(),
+            prompt: String::new(),
             body: body.into(),
             accent: false,
             kind: OutputKind::Html,
@@ -51,7 +52,7 @@ impl Terminal {
 
     pub fn push_error_html(&self, body: impl Into<String>) {
         self.push_line(TermLine {
-            prompt: "!".into(),
+            prompt: String::new(),
             body: body.into(),
             accent: true,
             kind: OutputKind::Error,
@@ -75,5 +76,14 @@ impl Terminal {
 
     pub fn set_cwd(&self, cwd: Vec<String>) {
         self.cwd.set(cwd);
+    }
+
+    pub fn prompt(&self) -> String {
+        let path = format_path(&self.cwd());
+        if path == "/" {
+            "guest@zzhack >".into()
+        } else {
+            format!("guest@zzhack {} >", path)
+        }
     }
 }

@@ -4,8 +4,6 @@ use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct TerminalWindowProps {
-    pub title: String,
-    pub status: String,
     pub lines: Vec<TermLine>,
     pub input: String,
     pub prompt: String,
@@ -17,9 +15,9 @@ pub struct TerminalWindowProps {
 pub fn terminal_window(props: &TerminalWindowProps) -> Html {
     html! {
         <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50 flex items-center justify-center p-6">
-            <div class="w-full max-w-4xl overflow-hidden rounded-xl border border-slate-800 bg-slate-900 shadow-xl shadow-slate-900/40 backdrop-blur">
-                <HeaderBar title={props.title.clone()} status={props.status.clone()} />
-                <div class="divide-y divide-slate-800">
+            <div class="w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-800/70 bg-slate-950/70 shadow-[0_20px_60px_-25px_rgba(0,0,0,0.85)] backdrop-blur-xl ring-1 ring-slate-800/50">
+                <HeaderBar />
+                <div class="bg-gradient-to-b from-slate-950/60 via-slate-950/70 to-slate-950/80 px-5 py-4 font-mono text-sm text-slate-100 space-y-3">
                     <OutputLog lines={props.lines.clone()} />
                     <PromptLine
                         prompt={props.prompt.clone()}

@@ -10,7 +10,7 @@ pub struct OutputLogProps {
 #[function_component(OutputLog)]
 pub fn output_log(props: &OutputLogProps) -> Html {
     html! {
-        <div class="space-y-1 px-4 py-3 font-mono text-sm text-slate-100">
+        <div class="space-y-1 font-mono text-sm text-slate-100">
             { for props.lines.iter().enumerate().map(|(idx, line)| render_line(idx, line)) }
         </div>
     }
@@ -35,8 +35,14 @@ fn render_line(idx: usize, line: &TermLine) -> Html {
     };
 
     html! {
-        <div class="flex gap-3 leading-relaxed" key={idx.to_string()}>
-            <span class="text-slate-500">{ &line.prompt }</span>
+        <div class="leading-relaxed flex gap-2" key={idx.to_string()}>
+            {
+                if !line.prompt.is_empty() {
+                    html! { <span class="text-slate-500">{ &line.prompt }</span> }
+                } else {
+                    html! {}
+                }
+            }
             <span class={classes!(text_class, "break-words")}>{ content }</span>
         </div>
     }
