@@ -1,10 +1,10 @@
+mod boa;
 mod cat;
 mod cd;
 mod clear;
 mod du;
 mod echo;
 mod fetch;
-mod boa;
 mod ls;
 mod pwd;
 mod render;
@@ -13,17 +13,17 @@ mod stat;
 use crate::cache_service::CacheService;
 use crate::terminal::Terminal;
 use crate::vfs_data::VfsNode;
-use async_trait::async_trait;
-use shell_parser::CommandSpec;
+use micro_cli::{CliError, Parser};
+use shell_parser::integration::ExecutableCommand;
 use std::rc::Rc;
 
+pub use boa::BoaCommand;
 pub use cat::CatCommand;
 pub use cd::CdCommand;
 pub use clear::ClearCommand;
 pub use du::DuCommand;
 pub use echo::EchoCommand;
 pub use fetch::FetchCommand;
-pub use boa::BoaCommand;
 pub use ls::LsCommand;
 pub use pwd::PwdCommand;
 pub use render::RenderCommand;
@@ -36,14 +36,21 @@ pub struct CommandContext {
     pub terminal: Terminal,
 }
 
-#[async_trait(?Send)]
-pub trait CommandHandler {
-    fn name(&self) -> &'static str;
-    fn spec(&self) -> CommandSpec;
-    async fn run(&self, args: &[String], ctx: &CommandContext);
+pub fn parse_cli<T: Parser>(args: &[String], ctx: &CommandContext, label: &str) -> Option<T> {
+    match T::parse_from(args.to_vec()) {
+        Ok(parsed) => Some(parsed),
+        Err(CliError::Help(text)) => {
+            ctx.terminal.push_text(text);
+            None
+        }
+        Err(err) => {
+            ctx.terminal.push_error(format!("{label}: {err}"));
+            None
+        }
+    }
 }
 
-pub fn command_handlers() -> Vec<Box<dyn CommandHandler>> {
+pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
     vec![
         Box::new(EchoCommand),
         Box::new(LsCommand),

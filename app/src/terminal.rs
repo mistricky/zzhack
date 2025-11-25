@@ -1,8 +1,9 @@
 use crate::cache_service::CacheService;
-use crate::commands::{CommandContext, CommandHandler};
+use crate::commands::CommandContext;
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::format_path;
 use crate::vfs_data::VfsNode;
+use shell_parser::integration::ExecutableCommand;
 use shell_parser::{ShellParseError, ShellParser};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -89,7 +90,7 @@ impl Terminal {
         input: &str,
         vfs: Rc<VfsNode>,
         cache: Option<Rc<CacheService>>,
-        handlers: &[Box<dyn CommandHandler>],
+        handlers: &[Box<dyn ExecutableCommand<CommandContext>>],
     ) {
         let ctx = CommandContext {
             vfs,
@@ -98,7 +99,7 @@ impl Terminal {
         };
 
         let mut specs = Vec::with_capacity(handlers.len());
-        let mut map: HashMap<&str, &Box<dyn CommandHandler>> = HashMap::new();
+        let mut map: HashMap<&str, &Box<dyn ExecutableCommand<CommandContext>>> = HashMap::new();
         for handler in handlers {
             specs.push(handler.spec());
             map.insert(handler.name(), handler);
@@ -136,6 +137,9 @@ impl Terminal {
             }
         };
 
-        handler.run(&command.args, &ctx).await;
+        if let Err(err) = handler.run(&command.args, &ctx) {
+            ctx.terminal
+                .push_error(format!("{}: {}", command.name, err));
+        }
     }
 }

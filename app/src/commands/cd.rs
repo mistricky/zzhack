@@ -1,27 +1,40 @@
-use crate::commands::{CommandContext, CommandHandler};
+use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
-use async_trait::async_trait;
+use micro_cli::Parser;
+use shell_parser::integration::ExecutableCommand;
 use shell_parser::CommandSpec;
+
+#[derive(Parser, Debug, Default)]
+#[command(about = "Change directory")]
+struct CdCli {
+    #[arg(positional, help = "Directory path")]
+    path: Option<String>,
+}
 
 pub struct CdCommand;
 
-#[async_trait(?Send)]
-impl CommandHandler for CdCommand {
+impl ExecutableCommand<CommandContext> for CdCommand {
     fn name(&self) -> &'static str {
         "cd"
+    }
+
+    fn description(&self) -> &'static str {
+        "Change directory"
     }
 
     fn spec(&self) -> CommandSpec {
         CommandSpec::new("cd").with_max_args(1)
     }
 
-    async fn run(&self, args: &[String], ctx: &CommandContext) {
-        let target = args.get(0).map(String::as_str).unwrap_or("/");
+    fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
+        let Some(cli) = parse_cli::<CdCli>(args, ctx, self.name()) else {
+            return Ok(());
+        };
+        let target = cli.path.as_deref().unwrap_or("/");
         let path = resolve_path(&ctx.terminal.cwd(), target);
         match find_node(&ctx.vfs, &path) {
             Some(node) if node.kind == VfsKind::Directory => {
                 ctx.terminal.set_cwd(path.clone());
-                // no additional output
             }
             Some(_) => {
                 ctx.terminal
@@ -32,5 +45,6 @@ impl CommandHandler for CdCommand {
                     .push_error(format!("cd: {}: no such directory", format_path(&path)));
             }
         }
+        Ok(())
     }
 }

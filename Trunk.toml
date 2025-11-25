@@ -2,8 +2,8 @@
 # Trunk is a WASM web application bundler for Rust
 
 [build]
-# Target directory for build outputs
-target = "index.html"
+# Trunk entry HTML
+target = "app/index.html"
 public_url = "/"
 # Directory to output the built files
 dist = "dist"

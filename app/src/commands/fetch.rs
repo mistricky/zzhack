@@ -1,10 +1,18 @@
 use crate::cache_service::CacheService;
-use crate::commands::{CommandContext, CommandHandler};
-use async_trait::async_trait;
+use crate::commands::{parse_cli, CommandContext};
+use micro_cli::Parser;
+use shell_parser::integration::ExecutableCommand;
 use shell_parser::CommandSpec;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::{spawn_local, JsFuture};
+
+#[derive(Parser, Debug, Default)]
+#[command(about = "Fetch a remote resource")]
+struct FetchCli {
+    #[arg(positional, help = "URI to fetch")]
+    uri: String,
+}
 
 pub struct FetchCommand;
 
@@ -31,32 +39,39 @@ pub async fn fetch_text_with_cache(uri: &str, cache: &Rc<CacheService>) -> Resul
     }
 }
 
-#[async_trait(?Send)]
-impl CommandHandler for FetchCommand {
+impl ExecutableCommand<CommandContext> for FetchCommand {
     fn name(&self) -> &'static str {
         "fetch"
+    }
+
+    fn description(&self) -> &'static str {
+        "Fetch a remote resource"
     }
 
     fn spec(&self) -> CommandSpec {
         CommandSpec::new("fetch").with_min_args(1).with_max_args(1)
     }
 
-    async fn run(&self, args: &[String], ctx: &CommandContext) {
-        let Some(uri) = args.get(0) else {
-            ctx.terminal.push_error("fetch: missing uri");
-            return;
+    fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
+        let Some(cli) = parse_cli::<FetchCli>(args, ctx, self.name()) else {
+            return Ok(());
         };
 
         let Some(cache) = ctx.cache.clone() else {
             ctx.terminal
                 .push_error("fetch: cache unavailable (OPFS init failed)");
-            return;
+            return Ok(());
         };
 
-        match fetch_text_with_cache(uri, &cache).await {
-            Ok(text) => ctx.terminal.push_text(text),
-            Err(err) => ctx.terminal.push_error(format!("fetch: {err}")),
-        };
+        let ctx = ctx.clone();
+        spawn_local(async move {
+            match fetch_text_with_cache(&cli.uri, &cache).await {
+                Ok(text) => ctx.terminal.push_text(text),
+                Err(err) => ctx.terminal.push_error(format!("fetch: {err}")),
+            };
+        });
+
+        Ok(())
     }
 }
 

@@ -1,9 +1,10 @@
 use crate::cache_service::CacheService;
-use crate::commands::{command_handlers, CommandHandler};
+use crate::commands::{command_handlers, CommandContext};
 use crate::components::TerminalWindow;
 use crate::terminal::Terminal;
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
+use shell_parser::integration::ExecutableCommand;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -14,7 +15,7 @@ struct SubmitState {
     input: UseStateHandle<String>,
     cache: UseStateHandle<Option<Rc<CacheService>>>,
     vfs: Rc<VfsNode>,
-    handlers: Rc<Vec<Box<dyn CommandHandler>>>,
+    handlers: Rc<Vec<Box<dyn ExecutableCommand<CommandContext>>>>,
 }
 
 #[function_component(App)]
@@ -94,7 +95,12 @@ async fn process_command(state: SubmitState, trimmed: String) {
 
     state
         .terminal
-        .execute_command(&trimmed, state.vfs.clone(), cache_handle, state.handlers.as_ref())
+        .execute_command(
+            &trimmed,
+            state.vfs.clone(),
+            cache_handle,
+            state.handlers.as_ref(),
+        )
         .await;
 
     // restore cleared input (kept empty)

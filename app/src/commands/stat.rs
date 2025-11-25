@@ -1,26 +1,36 @@
-use crate::commands::{CommandContext, CommandHandler};
+use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::{find_node, format_path, node_summary, resolve_path};
-use async_trait::async_trait;
+use micro_cli::Parser;
+use shell_parser::integration::ExecutableCommand;
 use shell_parser::CommandSpec;
+
+#[derive(Parser, Debug, Default)]
+#[command(about = "Display file or directory metadata")]
+struct StatCli {
+    #[arg(positional, help = "Path to inspect")]
+    path: String,
+}
 
 pub struct StatCommand;
 
-#[async_trait(?Send)]
-impl CommandHandler for StatCommand {
+impl ExecutableCommand<CommandContext> for StatCommand {
     fn name(&self) -> &'static str {
         "stat"
+    }
+
+    fn description(&self) -> &'static str {
+        "Display file or directory metadata"
     }
 
     fn spec(&self) -> CommandSpec {
         CommandSpec::new("stat").with_min_args(1).with_max_args(1)
     }
 
-    async fn run(&self, args: &[String], ctx: &CommandContext) {
-        let Some(target) = args.get(0) else {
-            ctx.terminal.push_error("stat: missing operand");
-            return;
+    fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
+        let Some(cli) = parse_cli::<StatCli>(args, ctx, self.name()) else {
+            return Ok(());
         };
-        let path = resolve_path(&ctx.terminal.cwd(), target);
+        let path = resolve_path(&ctx.terminal.cwd(), &cli.path);
         match find_node(&ctx.vfs, &path) {
             Some(node) => {
                 ctx.terminal
@@ -30,5 +40,6 @@ impl CommandHandler for StatCommand {
                 .terminal
                 .push_error(format!("stat: {}: not found", format_path(&path))),
         }
+        Ok(())
     }
 }

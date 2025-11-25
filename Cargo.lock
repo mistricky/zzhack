@@ -2828,6 +2828,7 @@ dependencies = [
  "boa_engine",
  "getrandom 0.3.4",
  "js-sys",
+ "micro_cli",
  "pulldown-cmark",
  "serde",
  "serde_json",

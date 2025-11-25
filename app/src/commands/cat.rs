@@ -1,51 +1,71 @@
 use crate::commands::fetch::fetch_text_with_cache;
-use crate::commands::{CommandContext, CommandHandler};
+use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
-use async_trait::async_trait;
+use micro_cli::Parser;
+use shell_parser::integration::ExecutableCommand;
 use shell_parser::CommandSpec;
+use wasm_bindgen_futures::spawn_local;
+
+#[derive(Parser, Debug, Default)]
+#[command(about = "Print file contents")]
+struct CatCli {
+    #[arg(positional, help = "Path to file")]
+    path: String,
+}
 
 pub struct CatCommand;
 
-#[async_trait(?Send)]
-impl CommandHandler for CatCommand {
+impl ExecutableCommand<CommandContext> for CatCommand {
     fn name(&self) -> &'static str {
         "cat"
+    }
+
+    fn description(&self) -> &'static str {
+        "Print file contents"
     }
 
     fn spec(&self) -> CommandSpec {
         CommandSpec::new("cat").with_min_args(1).with_max_args(1)
     }
 
-    async fn run(&self, args: &[String], ctx: &CommandContext) {
-        let Some(target) = args.get(0) else {
-            ctx.terminal.push_error("cat: missing operand");
-            return;
+    fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
+        let Some(cli) = parse_cli::<CatCli>(args, ctx, self.name()) else {
+            return Ok(());
         };
+        let ctx = ctx.clone();
+        spawn_local(async move {
+            run_cat(cli, ctx).await;
+        });
+        Ok(())
+    }
+}
 
-        let path = resolve_path(&ctx.terminal.cwd(), target);
-        let Some(node) = find_node(&ctx.vfs, &path) else {
-            ctx.terminal
-                .push_error(format!("cat: {}: no such file", format_path(&path)));
-            return;
-        };
+async fn run_cat(cli: CatCli, ctx: CommandContext) {
+    let target = &cli.path;
 
-        if node.kind != VfsKind::File {
-            ctx.terminal
-                .push_error(format!("cat: {}: is a directory", format_path(&path)));
-            return;
-        }
+    let path = resolve_path(&ctx.terminal.cwd(), target);
+    let Some(node) = find_node(&ctx.vfs, &path) else {
+        ctx.terminal
+            .push_error(format!("cat: {}: no such file", format_path(&path)));
+        return;
+    };
 
-        let Some(cache) = ctx.cache.clone() else {
-            ctx.terminal
-                .push_error("cat: cache unavailable (OPFS init failed)");
-            return;
-        };
+    if node.kind != VfsKind::File {
+        ctx.terminal
+            .push_error(format!("cat: {}: is a directory", format_path(&path)));
+        return;
+    }
 
-        let uri = format!("/data/{}", path.join("/"));
+    let Some(cache) = ctx.cache.clone() else {
+        ctx.terminal
+            .push_error("cat: cache unavailable (OPFS init failed)");
+        return;
+    };
 
-        match fetch_text_with_cache(&uri, &cache).await {
-            Ok(text) => ctx.terminal.push_text(text),
-            Err(err) => ctx.terminal.push_error(format!("cat: {err}")),
-        }
+    let uri = format!("/data/{}", path.join("/"));
+
+    match fetch_text_with_cache(&uri, &cache).await {
+        Ok(text) => ctx.terminal.push_text(text),
+        Err(err) => ctx.terminal.push_error(format!("cat: {err}")),
     }
 }

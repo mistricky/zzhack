@@ -1,21 +1,31 @@
-use crate::commands::{CommandContext, CommandHandler};
+use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::format_path;
-use async_trait::async_trait;
+use micro_cli::Parser;
+use shell_parser::integration::ExecutableCommand;
 use shell_parser::CommandSpec;
+
+#[derive(Parser, Debug, Default)]
+#[command(about = "Print working directory")]
+struct PwdCli;
 
 pub struct PwdCommand;
 
-#[async_trait(?Send)]
-impl CommandHandler for PwdCommand {
+impl ExecutableCommand<CommandContext> for PwdCommand {
     fn name(&self) -> &'static str {
         "pwd"
+    }
+
+    fn description(&self) -> &'static str {
+        "Print working directory"
     }
 
     fn spec(&self) -> CommandSpec {
         CommandSpec::new("pwd").with_max_args(0)
     }
 
-    async fn run(&self, _args: &[String], ctx: &CommandContext) {
+    fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
+        let _ = parse_cli::<PwdCli>(args, ctx, self.name());
         ctx.terminal.push_text(format_path(&ctx.terminal.cwd()));
+        Ok(())
     }
 }
