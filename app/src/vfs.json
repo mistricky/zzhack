@@ -4,9 +4,9 @@
   "kind": "directory",
   "extension": null,
   "size": null,
-  "modified": "2025-11-24T12:58:04.950119417Z",
+  "modified": "2025-11-25T06:56:18.603899818Z",
   "read_only": false,
-  "children_count": 7,
+  "children_count": 8,
   "children": [
     {
       "name": "a.js",
@@ -60,6 +60,17 @@
       "extension": "md",
       "size": 2389,
       "modified": "2025-11-24T12:58:04.950000253Z",
+      "read_only": false,
+      "children_count": null,
+      "children": null
+    },
+    {
+      "name": "img.png",
+      "path": "img.png",
+      "kind": "file",
+      "extension": "png",
+      "size": 114361,
+      "modified": "2025-11-25T06:56:11.336899245Z",
       "read_only": false,
       "children_count": null,
       "children": null
