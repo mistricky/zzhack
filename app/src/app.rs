@@ -3,7 +3,7 @@ use crate::commands::{command_handlers, execute_command, CommandContext, Command
 use crate::components::TerminalWindow;
 use crate::terminal::Terminal;
 use crate::types::{OutputKind, TermLine};
-use crate::vfs_data::{format_path, load_vfs, VfsNode};
+use crate::vfs_data::{load_vfs, VfsNode};
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -44,23 +44,13 @@ pub fn app() -> Html {
         Callback::from(move |_| handle_submit(submit_state.clone()))
     };
 
+    let prompt = submit_state.terminal.prompt();
+
     html! {
         <TerminalWindow
-            title={"zzhack-v6 terminal".to_string()}
-            status={"live".to_string()}
             lines={submit_state.terminal.snapshot()}
             input={(*input).clone()}
-            prompt={format!(
-                "guest@zzhack-v6:{}",
-                {
-                    let cwd_now = submit_state.terminal.cwd();
-                    if cwd_now.is_empty() {
-                        "/".into()
-                    } else {
-                        format_path(&cwd_now)
-                    }
-                }
-            )}
+            prompt={prompt}
             on_input={on_input}
             on_submit={on_submit}
         />
@@ -80,7 +70,7 @@ fn handle_submit(state: SubmitState) {
 
 async fn process_command(state: SubmitState, trimmed: String) {
     state.terminal.push_line(TermLine {
-        prompt: format!("{}$", format_path(&state.terminal.cwd())),
+        prompt: state.terminal.prompt(),
         body: trimmed.clone(),
         accent: false,
         kind: OutputKind::Text,

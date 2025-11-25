@@ -28,7 +28,7 @@ pub fn prompt_line(props: &PromptLineProps) -> Html {
     };
 
     html! {
-        <form onsubmit={on_submit} class="flex items-center gap-3 border-t border-slate-800 bg-slate-950/70 px-4 py-3 font-mono text-sm text-slate-100">
+        <form onsubmit={on_submit} class="flex items-center gap-3 font-mono text-sm text-slate-100">
             <span class="text-slate-500">{ props.prompt.clone() }</span>
             <span class="text-emerald-400">{ "❯" }</span>
             <input
