@@ -2,6 +2,8 @@ use micro_cli::{CliError, Parser};
 use shell_parser::command::CommandSpec;
 use shell_parser::integration::ExecutableCommand;
 
+use super::RunnerContext;
+
 #[derive(Parser, Debug, Default)]
 #[command(about = "Echo text", version = "0.1.0")]
 pub struct EchoCli {
@@ -16,7 +18,7 @@ pub struct EchoCli {
     pub count: u8,
 }
 
-impl ExecutableCommand for EchoCli {
+impl ExecutableCommand<RunnerContext> for EchoCli {
     fn name(&self) -> &'static str {
         "echo"
     }
@@ -29,7 +31,7 @@ impl ExecutableCommand for EchoCli {
         CommandSpec::new(self.name())
     }
 
-    fn run(&self, args: &[String]) -> Result<(), String> {
+    fn run(&self, args: &[String], context: &RunnerContext) -> Result<(), String> {
         let parsed = match EchoCli::parse_from(args.to_vec()) {
             Ok(ok) => ok,
             Err(CliError::Help(text)) => {
@@ -39,7 +41,8 @@ impl ExecutableCommand for EchoCli {
             Err(err) => return Err(err.to_string()),
         };
         println!(
-            "{} - {}",
+            "{} {} - {}",
+            context.prefix,
             <EchoCli as Parser>::name(),
             <EchoCli as Parser>::description()
         );
@@ -53,6 +56,7 @@ impl ExecutableCommand for EchoCli {
         &self,
         args: &[String],
         _input: Option<String>,
+        context: &RunnerContext,
     ) -> Result<Option<String>, String> {
         let parsed = match EchoCli::parse_from(args.to_vec()) {
             Ok(ok) => ok,
@@ -68,7 +72,8 @@ impl ExecutableCommand for EchoCli {
         }
         let combined = outputs.join("\n");
         println!(
-            "{} - {}",
+            "{} {} - {}",
+            context.prefix,
             <EchoCli as Parser>::name(),
             <EchoCli as Parser>::description()
         );

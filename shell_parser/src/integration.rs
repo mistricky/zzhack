@@ -12,7 +12,7 @@ pub enum ShellCliError {
 }
 
 /// Trait implemented by higher-level CLI commands that can be executed after parsing.
-pub trait ExecutableCommand: Send + Sync {
+pub trait ExecutableCommand<C>: Send + Sync {
     /// Name used in the script (e.g., `echo`).
     fn name(&self) -> &'static str;
     /// Human-readable description for help output.
@@ -20,26 +20,28 @@ pub trait ExecutableCommand: Send + Sync {
     /// Specification for validation.
     fn spec(&self) -> CommandSpec;
     /// Execute the command with already-parsed arguments.
-    fn run(&self, args: &[String]) -> Result<(), String>;
+    fn run(&self, args: &[String], context: &C) -> Result<(), String>;
 
     /// Execute with an optional piped input and return an optional piped output.
     fn run_with_input(
         &self,
         args: &[String],
         input: Option<String>,
+        context: &C,
     ) -> Result<Option<String>, String> {
-        self.run(args)?;
+        self.run(args, context)?;
         Ok(input)
     }
 }
 
 /// Builder for integrating [`ShellParser`] with executable commands.
-pub struct CliRunner {
+pub struct CliRunner<C> {
     parser: ShellParser,
-    handlers: HashMap<String, Box<dyn ExecutableCommand>>,
+    handlers: HashMap<String, Box<dyn ExecutableCommand<C>>>,
+    context: C,
 }
 
-impl CliRunner {
+impl<C> CliRunner<C> {
     /// Parse and execute a full script (multiple lines/commands).
     pub fn run_script(&self, script: &str) -> Result<(), ShellCliError> {
         let invocations = self.parser.parse(script)?;
@@ -105,7 +107,7 @@ impl CliRunner {
                 message: "no handler registered".into(),
             })?;
         handler
-            .run_with_input(&args, input)
+            .run_with_input(&args, input, &self.context)
             .map_err(|message| ShellCliError::Execution {
                 command: name,
                 message,
@@ -122,9 +124,9 @@ impl CliRunner {
 }
 
 /// Create a [`CliRunner`] by registering executable commands.
-pub fn with_cli<I>(commands: I) -> CliRunner
+pub fn with_cli<C, I>(context: C, commands: I) -> CliRunner<C>
 where
-    I: IntoIterator<Item = Box<dyn ExecutableCommand>>,
+    I: IntoIterator<Item = Box<dyn ExecutableCommand<C>>>,
 {
     let mut handlers = HashMap::new();
     let mut specs = Vec::new();
@@ -135,5 +137,9 @@ where
     }
 
     let parser = ShellParser::with_commands(specs);
-    CliRunner { parser, handlers }
+    CliRunner {
+        parser,
+        handlers,
+        context,
+    }
 }

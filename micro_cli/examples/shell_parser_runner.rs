@@ -1,17 +1,27 @@
 mod cli {
     pub mod add_cli;
     pub mod echo_cli;
+
+    #[derive(Debug, Clone)]
+    pub struct RunnerContext {
+        pub prefix: String,
+    }
 }
 
 use cli::add_cli::AddCli;
 use cli::echo_cli::EchoCli;
-use shell_parser::integration::with_cli;
+use cli::RunnerContext;
+use shell_parser::integration::{with_cli, ExecutableCommand};
 
 fn main() {
-    let runner = with_cli(vec![
-        Box::new(EchoCli::default()) as Box<dyn shell_parser::integration::ExecutableCommand>,
-        Box::new(AddCli::default()) as Box<dyn shell_parser::integration::ExecutableCommand>,
-    ]);
+    let context = RunnerContext {
+        prefix: "[ctx]".to_string(),
+    };
+    let commands: Vec<Box<dyn ExecutableCommand<RunnerContext>>> = vec![
+        Box::new(EchoCli::default()),
+        Box::new(AddCli::default()),
+    ];
+    let runner = with_cli(context, commands);
 
     // Execute a script through shell_parser and dispatch to the derived CLIs.
     let script = r#"
