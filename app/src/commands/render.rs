@@ -57,13 +57,26 @@ async fn run_render(cli: RenderCli, ctx: CommandContext) {
         return;
     }
 
+    let uri = format!("/data/{}", path.join("/"));
+
+    let image_extensions = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg"];
+    if node
+        .extension
+        .as_deref()
+        .map(|ext| image_extensions.contains(&ext.to_ascii_lowercase().as_str()))
+        .unwrap_or(false)
+    {
+        ctx.terminal
+            .push_html(format!(r#"<img src="{uri}" alt="rendered image" />"#));
+        return;
+    }
+
     let Some(cache) = ctx.cache.clone() else {
         ctx.terminal
             .push_error("render: cache unavailable (OPFS init failed)");
         return;
     };
 
-    let uri = format!("/data/{}", path.join("/"));
     match fetch_text_with_cache(&uri, &cache).await {
         Ok(content) => {
             let rendered = render_markdown_to_html(&content);
