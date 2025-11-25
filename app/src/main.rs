@@ -1,6 +1,7 @@
 mod app;
 mod cache_service;
 mod commands;
+mod commands_history_service;
 mod components;
 mod markdown_renderer;
 mod terminal;
