@@ -17,10 +17,8 @@ fn main() {
     let context = RunnerContext {
         prefix: "[ctx]".to_string(),
     };
-    let commands: Vec<Box<dyn ExecutableCommand<RunnerContext>>> = vec![
-        Box::new(EchoCli::default()),
-        Box::new(AddCli::default()),
-    ];
+    let commands: Vec<Box<dyn ExecutableCommand<RunnerContext>>> =
+        vec![Box::new(EchoCli::default()), Box::new(AddCli::default())];
     let runner = with_cli(context, commands);
 
     // Execute a script through shell_parser and dispatch to the derived CLIs.

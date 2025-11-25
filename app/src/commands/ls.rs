@@ -1,22 +1,36 @@
-use crate::commands::{CommandContext, CommandHandler};
+use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
-use async_trait::async_trait;
+use micro_cli::Parser;
+use shell_parser::integration::ExecutableCommand;
 use shell_parser::CommandSpec;
+
+#[derive(Parser, Debug, Default)]
+#[command(about = "List directory contents")]
+struct LsCli {
+    #[arg(positional, help = "Path to list")]
+    path: Option<String>,
+}
 
 pub struct LsCommand;
 
-#[async_trait(?Send)]
-impl CommandHandler for LsCommand {
+impl ExecutableCommand<CommandContext> for LsCommand {
     fn name(&self) -> &'static str {
         "ls"
+    }
+
+    fn description(&self) -> &'static str {
+        "List directory contents"
     }
 
     fn spec(&self) -> CommandSpec {
         CommandSpec::new("ls").with_max_args(1)
     }
 
-    async fn run(&self, args: &[String], ctx: &CommandContext) {
-        let target = args.get(0).map(String::as_str).unwrap_or(".");
+    fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
+        let Some(cli) = parse_cli::<LsCli>(args, ctx, self.name()) else {
+            return Ok(());
+        };
+        let target = cli.path.as_deref().unwrap_or(".");
         let path = resolve_path(&ctx.terminal.cwd(), target);
 
         match find_node(&ctx.vfs, &path) {
@@ -52,5 +66,6 @@ impl CommandHandler for LsCommand {
                 format_path(&path)
             )),
         }
+        Ok(())
     }
 }
