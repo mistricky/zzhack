@@ -1,5 +1,5 @@
 use crate::cache_service::CacheService;
-use crate::commands::{command_handlers, execute_command, CommandContext, CommandHandler};
+use crate::commands::{command_handlers, CommandHandler};
 use crate::components::TerminalWindow;
 use crate::terminal::Terminal;
 use crate::types::{OutputKind, TermLine};
@@ -92,13 +92,10 @@ async fn process_command(state: SubmitState, trimmed: String) {
         }
     };
 
-    let ctx = CommandContext {
-        vfs: state.vfs.clone(),
-        cache: cache_handle,
-        terminal: state.terminal.clone(),
-    };
-
-    execute_command(&trimmed, ctx, state.handlers.as_ref()).await;
+    state
+        .terminal
+        .execute_command(&trimmed, state.vfs.clone(), cache_handle, state.handlers.as_ref())
+        .await;
 
     // restore cleared input (kept empty)
     state.input.set(String::new());
