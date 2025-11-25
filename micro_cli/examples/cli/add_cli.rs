@@ -2,6 +2,8 @@ use micro_cli::{CliError, Parser};
 use shell_parser::command::CommandSpec;
 use shell_parser::integration::ExecutableCommand;
 
+use super::RunnerContext;
+
 #[derive(Parser, Debug, Default)]
 #[command(about = "Add two numbers", version = "0.1.0")]
 pub struct AddCli {
@@ -11,7 +13,7 @@ pub struct AddCli {
     pub rhs: i32,
 }
 
-impl ExecutableCommand for AddCli {
+impl ExecutableCommand<RunnerContext> for AddCli {
     fn name(&self) -> &'static str {
         "add"
     }
@@ -24,7 +26,7 @@ impl ExecutableCommand for AddCli {
         CommandSpec::new(self.name())
     }
 
-    fn run(&self, args: &[String]) -> Result<(), String> {
+    fn run(&self, args: &[String], context: &RunnerContext) -> Result<(), String> {
         let parsed = match AddCli::parse_from(args.to_vec()) {
             Ok(ok) => ok,
             Err(CliError::Help(text)) => {
@@ -34,7 +36,8 @@ impl ExecutableCommand for AddCli {
             Err(err) => return Err(err.to_string()),
         };
         println!(
-            "{} - {}",
+            "{} {} - {}",
+            context.prefix,
             <AddCli as Parser>::name(),
             <AddCli as Parser>::description()
         );
@@ -51,6 +54,7 @@ impl ExecutableCommand for AddCli {
         &self,
         args: &[String],
         input: Option<String>,
+        context: &RunnerContext,
     ) -> Result<Option<String>, String> {
         let parsed = match AddCli::parse_from(args.to_vec()) {
             Ok(ok) => ok,
@@ -66,7 +70,8 @@ impl ExecutableCommand for AddCli {
         let rhs = parsed.rhs;
         let sum = lhs + rhs;
         println!(
-            "{} - {}",
+            "{} {} - {}",
+            context.prefix,
             <AddCli as Parser>::name(),
             <AddCli as Parser>::description()
         );
