@@ -13,6 +13,8 @@ module.exports = {
         text: "var(--color-text)",
         hover: "var(--color-hover)",
         halo: "var(--color-halo)",
+        post: "var(--color-post)",
+        "post-hover": "var(--color-post-hover)",
       },
     },
   },

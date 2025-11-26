@@ -3,6 +3,7 @@ mod cache_service;
 mod commands;
 mod commands_history_service;
 mod components;
+mod config_service;
 mod markdown_renderer;
 mod terminal;
 mod types;
