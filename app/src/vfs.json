@@ -5,7 +5,6 @@
   "extension": null,
   "size": null,
   "modified": "2025-11-25T06:56:18.603899818Z",
-  "read_only": false,
   "children_count": 8,
   "children": [
     {
@@ -15,9 +14,11 @@
       "extension": "js",
       "size": 86,
       "modified": "2025-11-24T12:58:04.949266211Z",
-      "read_only": false,
       "children_count": null,
-      "children": null
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
     },
     {
       "name": "about",
@@ -26,7 +27,6 @@
       "extension": null,
       "size": null,
       "modified": "2025-11-24T12:58:04.950000253Z",
-      "read_only": false,
       "children_count": 2,
       "children": [
         {
@@ -36,9 +36,11 @@
           "extension": "md",
           "size": 466,
           "modified": "2025-11-24T12:58:04.949959717Z",
-          "read_only": false,
           "children_count": null,
-          "children": null
+          "children": null,
+          "title": null,
+          "description": null,
+          "is_post": false
         },
         {
           "name": "index.md",
@@ -47,11 +49,16 @@
           "extension": "md",
           "size": 598,
           "modified": "2025-11-24T12:58:04.950000253Z",
-          "read_only": false,
           "children_count": null,
-          "children": null
+          "children": null,
+          "title": "关于页面",
+          "description": "个人简介和技能展示页面",
+          "is_post": false
         }
-      ]
+      ],
+      "title": null,
+      "description": null,
+      "is_post": true
     },
     {
       "name": "green_theme_demo.md",
@@ -60,9 +67,11 @@
       "extension": "md",
       "size": 2389,
       "modified": "2025-11-24T12:58:04.950000253Z",
-      "read_only": false,
       "children_count": null,
-      "children": null
+      "children": null,
+      "title": "Shell 绿色主题演示",
+      "description": "展示终端模拟器的 Matrix 风格绿色主题配色方案",
+      "is_post": false
     },
     {
       "name": "img.png",
@@ -71,9 +80,11 @@
       "extension": "png",
       "size": 114361,
       "modified": "2025-11-25T06:56:11.336899245Z",
-      "read_only": false,
       "children_count": null,
-      "children": null
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
     },
     {
       "name": "index.md",
@@ -82,9 +93,11 @@
       "extension": "md",
       "size": 766,
       "modified": "2025-11-24T12:58:04.950000253Z",
-      "read_only": false,
       "children_count": null,
-      "children": null
+      "children": null,
+      "title": "数据目录",
+      "description": "包含所有演示文件和文档的根目录",
+      "is_post": false
     },
     {
       "name": "links",
@@ -93,7 +106,6 @@
       "extension": null,
       "size": null,
       "modified": "2025-11-24T12:58:04.950119417Z",
-      "read_only": false,
       "children_count": 2,
       "children": [
         {
@@ -103,9 +115,11 @@
           "extension": "md",
           "size": 1215,
           "modified": "2025-11-24T12:58:04.950000253Z",
-          "read_only": false,
           "children_count": null,
-          "children": null
+          "children": null,
+          "title": null,
+          "description": null,
+          "is_post": false
         },
         {
           "name": "resources.md",
@@ -114,11 +128,16 @@
           "extension": "md",
           "size": 1215,
           "modified": "2025-11-24T12:58:04.950119417Z",
-          "read_only": false,
           "children_count": null,
-          "children": null
+          "children": null,
+          "title": null,
+          "description": null,
+          "is_post": false
         }
-      ]
+      ],
+      "title": null,
+      "description": null,
+      "is_post": false
     },
     {
       "name": "metadata_demo.md",
@@ -127,9 +146,11 @@
       "extension": "md",
       "size": 2219,
       "modified": "2025-11-24T12:58:04.950119417Z",
-      "read_only": false,
       "children_count": null,
-      "children": null
+      "children": null,
+      "title": "Markdown 元数据功能演示",
+      "description": "展示如何在 markdown 文件中使用 frontmatter 元数据",
+      "is_post": false
     },
     {
       "name": "posts",
@@ -138,7 +159,6 @@
       "extension": null,
       "size": null,
       "modified": "2025-11-24T12:58:04.950208545Z",
-      "read_only": false,
       "children_count": 2,
       "children": [
         {
@@ -148,9 +168,11 @@
           "extension": "md",
           "size": 753,
           "modified": "2025-11-24T12:58:04.950119417Z",
-          "read_only": false,
           "children_count": null,
-          "children": null
+          "children": null,
+          "title": null,
+          "description": null,
+          "is_post": false
         },
         {
           "name": "demo.md",
@@ -159,11 +181,19 @@
           "extension": "md",
           "size": 753,
           "modified": "2025-11-24T12:58:04.950208545Z",
-          "read_only": false,
           "children_count": null,
-          "children": null
+          "children": null,
+          "title": null,
+          "description": null,
+          "is_post": false
         }
-      ]
+      ],
+      "title": null,
+      "description": null,
+      "is_post": false
     }
-  ]
+  ],
+  "title": null,
+  "description": null,
+  "is_post": true
 }
