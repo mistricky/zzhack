@@ -9,7 +9,6 @@ pub struct VfsNode {
     pub extension: Option<String>,
     pub size: Option<u64>,
     pub modified: Option<String>,
-    pub read_only: bool,
     pub children_count: Option<usize>,
     pub children: Option<Vec<VfsNode>>,
 }
@@ -98,10 +97,9 @@ pub fn node_summary(node: &VfsNode) -> String {
         .map(|s| format!("{s} bytes"))
         .unwrap_or_else(|| "-".into());
     let modified = node.modified.clone().unwrap_or_else(|| "-".into());
-    let ro = if node.read_only { "ro" } else { "rw" };
 
     format!(
-        "kind={kind} size={size} perms={ro} modified={modified} ext={}",
+        "kind={kind} size={size} modified={modified} ext={}",
         node.extension.clone().unwrap_or_else(|| "-".into())
     )
 }
