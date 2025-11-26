@@ -1,8 +1,8 @@
 use crate::cache_service::CacheService;
-use crate::commands::CommandContext;
+use crate::commands::{command_handlers, CommandContext};
+use crate::commands_history_service::CommandHistory;
 use crate::types::{OutputKind, TermLine};
-use crate::vfs_data::format_path;
-use crate::vfs_data::VfsNode;
+use crate::vfs_data::{load_vfs, VfsNode};
 use shell_parser::integration::ExecutableCommand;
 use shell_parser::{ShellParseError, ShellParser};
 use std::collections::HashMap;
@@ -13,11 +13,40 @@ use yew::UseStateHandle;
 pub struct Terminal {
     lines: UseStateHandle<Vec<TermLine>>,
     cwd: UseStateHandle<Vec<String>>,
+    vfs: Rc<VfsNode>,
+    cache: Option<Rc<CacheService>>,
+    handlers: Rc<Vec<Box<dyn ExecutableCommand<CommandContext>>>>,
 }
 
 impl Terminal {
-    pub fn new(lines: UseStateHandle<Vec<TermLine>>, cwd: UseStateHandle<Vec<String>>) -> Self {
-        Self { lines, cwd }
+    pub async fn new(
+        lines: UseStateHandle<Vec<TermLine>>,
+        cwd: UseStateHandle<Vec<String>>,
+    ) -> Self {
+        let cache = match CacheService::new().await {
+            Ok(service) => Some(Rc::new(service)),
+            Err(err) => {
+                web_sys::console::error_1(&err);
+                None
+            }
+        };
+
+        Self {
+            lines,
+            cwd,
+            vfs: Rc::new(load_vfs()),
+            cache,
+            handlers: Rc::new(command_handlers()),
+        }
+    }
+
+    pub fn update_state_handles(
+        &mut self,
+        lines: UseStateHandle<Vec<TermLine>>,
+        cwd: UseStateHandle<Vec<String>>,
+    ) {
+        self.lines = lines;
+        self.cwd = cwd;
     }
 
     pub fn snapshot(&self) -> Vec<TermLine> {
@@ -32,7 +61,6 @@ impl Terminal {
 
     pub fn push_text(&self, body: impl Into<String>) {
         self.push_line(TermLine {
-            prompt: String::new(),
             body: body.into(),
             accent: false,
             kind: OutputKind::Text,
@@ -41,7 +69,6 @@ impl Terminal {
 
     pub fn push_error(&self, body: impl Into<String>) {
         self.push_line(TermLine {
-            prompt: String::new(),
             body: body.into(),
             accent: true,
             kind: OutputKind::Error,
@@ -50,7 +77,6 @@ impl Terminal {
 
     pub fn push_html(&self, body: impl Into<String>) {
         self.push_line(TermLine {
-            prompt: String::new(),
             body: body.into(),
             accent: false,
             kind: OutputKind::Html,
@@ -76,31 +102,31 @@ impl Terminal {
         self.cwd.set(cwd);
     }
 
-    pub fn prompt(&self) -> String {
-        let path = format_path(&self.cwd());
-        if path == "/" {
-            "guest@zzhack >".into()
-        } else {
-            format!("guest@zzhack {} >", path)
-        }
+    pub async fn process_command(&self, history: UseStateHandle<CommandHistory>, trimmed: String) {
+        self.push_line(TermLine {
+            body: trimmed.clone(),
+            accent: false,
+            kind: OutputKind::Text,
+        });
+
+        let mut next_history = (*history).clone();
+        next_history.push(trimmed.clone());
+        history.set(next_history);
+
+        self.execute_command(&trimmed).await;
     }
 
-    pub async fn execute_command(
-        &self,
-        input: &str,
-        vfs: Rc<VfsNode>,
-        cache: Option<Rc<CacheService>>,
-        handlers: &[Box<dyn ExecutableCommand<CommandContext>>],
-    ) {
+    pub async fn execute_command(&self, input: &str) {
+        let cache = self.cache.clone();
         let ctx = CommandContext {
-            vfs,
+            vfs: self.vfs.clone(),
             cache,
             terminal: self.clone(),
         };
 
-        let mut specs = Vec::with_capacity(handlers.len());
+        let mut specs = Vec::with_capacity(self.handlers.len());
         let mut map: HashMap<&str, &Box<dyn ExecutableCommand<CommandContext>>> = HashMap::new();
-        for handler in handlers {
+        for handler in self.handlers.iter() {
             specs.push(handler.spec());
             map.insert(handler.name(), handler);
         }

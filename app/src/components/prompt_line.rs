@@ -3,7 +3,6 @@ use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct PromptLineProps {
-    pub prompt: String,
     pub value: String,
     pub on_input: Callback<String>,
     pub on_submit: Callback<()>,
@@ -51,7 +50,6 @@ pub fn prompt_line(props: &PromptLineProps) -> Html {
 
     html! {
         <form onsubmit={on_submit} class="flex items-center gap-3 font-mono text-sm text-slate-100">
-            <span class="text-slate-500">{ props.prompt.clone() }</span>
             <span class="text-emerald-400">{ "❯" }</span>
             <input
                 class="flex-1 bg-transparent text-slate-100 outline-none placeholder:text-slate-600"

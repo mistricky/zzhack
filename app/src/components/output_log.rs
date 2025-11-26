@@ -36,13 +36,6 @@ fn render_line(idx: usize, line: &TermLine) -> Html {
 
     html! {
         <div class="leading-relaxed flex gap-2" key={idx.to_string()}>
-            {
-                if !line.prompt.is_empty() {
-                    html! { <span class="text-slate-500">{ &line.prompt }</span> }
-                } else {
-                    html! {}
-                }
-            }
             <span class={classes!(text_class, "break-words")}>{ content }</span>
         </div>
     }

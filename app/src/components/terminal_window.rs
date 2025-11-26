@@ -10,7 +10,6 @@ const LIGHT_MODE_ICON: &str = include_str!("../icons/light_mode.svg");
 pub struct TerminalWindowProps {
     pub lines: Vec<TermLine>,
     pub input: String,
-    pub prompt: String,
     pub on_input: Callback<String>,
     pub on_submit: Callback<()>,
     pub on_history_nav: Callback<crate::components::HistoryDirection>,
@@ -63,7 +62,6 @@ pub fn terminal_window(props: &TerminalWindowProps) -> Html {
                 <div class="bg-card backdrop-blur-xl px-5 py-4 font-mono text-sm text-text space-y-3">
                     <OutputLog lines={props.lines.clone()} />
                     <PromptLine
-                        prompt={props.prompt.clone()}
                         value={props.input.clone()}
                         on_input={props.on_input.clone()}
                         on_submit={props.on_submit.clone()}
