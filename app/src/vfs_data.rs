@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, PartialEq)]
 pub struct VfsNode {
     pub name: String,
     pub path: String,

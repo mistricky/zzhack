@@ -6,6 +6,7 @@ mod components;
 mod markdown_renderer;
 mod terminal;
 mod types;
+mod utils;
 mod vfs_data;
 
 use app::App;
