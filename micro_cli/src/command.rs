@@ -176,13 +176,20 @@ impl CliApp {
 
     fn build_root_help(&self) -> String {
         let mut out = String::new();
-        out.push_str(&format!("Usage: {} <COMMAND> [ARGS]\n\n", self.name));
-        out.push_str(&format!("{}\n\n", self.about));
-        out.push_str("Commands:\n");
-        for cmd in &self.commands {
-            out.push_str(&format!("  {:<18} {}\n", cmd.name, cmd.about));
+        out.push_str(&format!("Usage: {} <COMMAND> [ARGS]\n", self.name));
+        out.push_str(&format!("{}\n", self.about));
+
+        if !self.commands.is_empty() {
+            out.push('\n');
+            out.push_str("Commands:\n");
+            for cmd in &self.commands {
+                out.push_str(&format!("  {:<18} {}\n", cmd.name, cmd.about));
+            }
         }
-        out.push_str("\nOptions:\n  -h, --help          Show help\n");
+
+        out.push('\n');
+        out.push_str("Global options:\n");
+        out.push_str("  -h, --help         Show help\n");
         out
     }
 
