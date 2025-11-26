@@ -4,13 +4,16 @@ mod cd;
 mod clear;
 mod du;
 mod echo;
+mod email;
 mod fetch;
 mod ls;
 mod pwd;
 mod render;
 mod stat;
+mod whoami;
 
 use crate::cache_service::CacheService;
+use crate::config_service::AppConfig;
 use crate::terminal::Terminal;
 use crate::vfs_data::VfsNode;
 use micro_cli::{CliError, Parser};
@@ -23,17 +26,20 @@ pub use cd::CdCommand;
 pub use clear::ClearCommand;
 pub use du::DuCommand;
 pub use echo::EchoCommand;
+pub use email::EmailCommand;
 pub use fetch::FetchCommand;
 pub use ls::LsCommand;
 pub use pwd::PwdCommand;
 pub use render::RenderCommand;
 pub use stat::StatCommand;
+pub use whoami::WhoAmICommand;
 
 #[derive(Clone)]
 pub struct CommandContext {
     pub vfs: Rc<VfsNode>,
     pub cache: Option<Rc<CacheService>>,
     pub terminal: Terminal,
+    pub config: &'static AppConfig,
 }
 
 pub fn parse_cli<T: Parser>(args: &[String], ctx: &CommandContext, label: &str) -> Option<T> {
@@ -63,5 +69,7 @@ pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
         Box::new(RenderCommand),
         Box::new(ClearCommand),
         Box::new(PwdCommand),
+        Box::new(EmailCommand),
+        Box::new(WhoAmICommand),
     ]
 }
