@@ -1,34 +1,55 @@
-use crate::cache_service::CacheService;
-use crate::commands::{command_handlers, CommandContext};
 use crate::commands_history_service::CommandHistory;
 use crate::components::{HistoryDirection, TerminalWindow};
 use crate::terminal::Terminal;
-use crate::types::{OutputKind, TermLine};
-use crate::vfs_data::{load_vfs, VfsNode};
-use shell_parser::integration::ExecutableCommand;
+use crate::types::TermLine;
+use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
-use yew::prelude::*;
+use yew::{prelude::*, use_effect_with, use_mut_ref};
 
 #[derive(Clone)]
 struct SubmitState {
-    terminal: Terminal,
+    terminal: Rc<RefCell<Option<Terminal>>>,
+    terminal_ready: UseStateHandle<bool>,
     input: UseStateHandle<String>,
-    cache: UseStateHandle<Option<Rc<CacheService>>>,
-    vfs: Rc<VfsNode>,
-    handlers: Rc<Vec<Box<dyn ExecutableCommand<CommandContext>>>>,
     history: UseStateHandle<CommandHistory>,
 }
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let vfs = use_memo((), |_| load_vfs());
     let lines = use_state(Vec::<TermLine>::new);
     let input = use_state(String::new);
     let cwd = use_state(Vec::<String>::new);
-    let cache = use_state(|| Option::<Rc<CacheService>>::None);
-    let handlers = use_memo((), |_| command_handlers());
     let history = use_state(CommandHistory::new);
+    let terminal = use_mut_ref(|| Option::<Terminal>::None);
+    let terminal_ready = use_state(|| false);
+
+    {
+        let terminal = terminal.clone();
+        let terminal_ready = terminal_ready.clone();
+        let lines = lines.clone();
+        let cwd = cwd.clone();
+        use_effect_with((), move |_| {
+            spawn_local(async move {
+                let built = Terminal::new(lines, cwd).await;
+                *terminal.borrow_mut() = Some(built);
+                terminal_ready.set(true);
+            });
+            || ()
+        });
+    }
+
+    {
+        let terminal = terminal.clone();
+        let lines = lines.clone();
+        let cwd = cwd.clone();
+        use_effect_with((lines.clone(), cwd.clone()), move |(lines, cwd)| {
+            if let Some(term) = terminal.borrow_mut().as_mut() {
+                term.update_state_handles(lines.clone(), cwd.clone());
+            }
+            || ()
+        });
+    }
 
     let on_input = {
         let input = input.clone();
@@ -36,11 +57,9 @@ pub fn app() -> Html {
     };
 
     let submit_state = SubmitState {
-        terminal: Terminal::new(lines.clone(), cwd.clone()),
+        terminal: terminal.clone(),
+        terminal_ready: terminal_ready.clone(),
         input: input.clone(),
-        cache: cache.clone(),
-        vfs: vfs.clone(),
-        handlers: handlers.clone(),
         history: history.clone(),
     };
 
@@ -49,7 +68,7 @@ pub fn app() -> Html {
         Callback::from(move |_| handle_submit(submit_state.clone()))
     };
 
-    let prompt = submit_state.terminal.prompt();
+    let displayed_lines = (*lines).clone();
 
     let on_history_nav = {
         let history = history.clone();
@@ -69,9 +88,8 @@ pub fn app() -> Html {
 
     html! {
         <TerminalWindow
-            lines={submit_state.terminal.snapshot()}
+            lines={displayed_lines}
             input={(*input).clone()}
-            prompt={prompt}
             on_input={on_input}
             on_submit={on_submit}
             on_history_nav={on_history_nav}
@@ -83,54 +101,16 @@ fn handle_submit(state: SubmitState) {
     let trimmed = (*state.input).trim().to_string();
     state.input.set(String::new());
 
-    if trimmed.is_empty() {
+    if trimmed.is_empty() || !*state.terminal_ready {
         return;
     }
 
-    spawn_local(process_command(state, trimmed));
-}
-
-async fn process_command(state: SubmitState, trimmed: String) {
-    state.terminal.push_line(TermLine {
-        prompt: state.terminal.prompt(),
-        body: trimmed.clone(),
-        accent: false,
-        kind: OutputKind::Text,
-    });
-
-    // record history before running
-    {
-        let mut next_history = (*state.history).clone();
-        next_history.push(trimmed.clone());
-        state.history.set(next_history);
-    }
-
-    let cache_handle = if let Some(existing) = state.cache.as_ref() {
-        Some(existing.clone())
-    } else {
-        match CacheService::new().await {
-            Ok(service) => {
-                let rc: Rc<CacheService> = Rc::new(service);
-                state.cache.set(Some(rc.clone()));
-                Some(rc)
-            }
-            Err(err) => {
-                web_sys::console::error_1(&err);
-                None
-            }
-        }
+    let Some(terminal) = state.terminal.borrow().clone() else {
+        return;
     };
 
-    state
-        .terminal
-        .execute_command(
-            &trimmed,
-            state.vfs.clone(),
-            cache_handle,
-            state.handlers.as_ref(),
-        )
-        .await;
-
-    // restore cleared input (kept empty)
-    state.input.set(String::new());
+    let history = state.history.clone();
+    spawn_local(async move {
+        terminal.process_command(history, trimmed).await;
+    });
 }
