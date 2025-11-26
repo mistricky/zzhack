@@ -9,6 +9,7 @@ pub struct AppSection {
     pub terminal_window: bool,
     pub mac_title_bar: bool,
     pub prompt_placeholder: String,
+    pub prompt_symbol: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
