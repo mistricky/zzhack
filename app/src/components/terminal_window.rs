@@ -57,7 +57,7 @@ pub fn terminal_window(props: &TerminalWindowProps) -> Html {
             >
                 { icon }
             </button>
-            <div class="w-full max-w-4xl overflow-hidden rounded-2xl border border-[0.5px] border-border bg-card shadow-[0_20px_60px_-25px_rgba(0,0,0,0.85)] backdrop-blur-xl ring-[0.5px] ring-border">
+            <div class="w-full max-w-4xl min-h-[400px] overflow-hidden rounded-2xl border border-[0.5px] border-border bg-card shadow-[0_20px_60px_-25px_rgba(0,0,0,0.85)] backdrop-blur-xl ring-[0.5px] ring-border">
                 <HeaderBar />
                 <div class="bg-card backdrop-blur-xl px-5 py-4 font-mono text-sm text-text space-y-3">
                     <OutputLog lines={props.lines.clone()} />
