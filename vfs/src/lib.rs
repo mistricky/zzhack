@@ -1,6 +1,6 @@
 use humantime::format_rfc3339;
 use serde::Serialize;
-use std::{fs, path::Path, time::SystemTime};
+use std::{fs, io, path::Path, time::SystemTime};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -19,9 +19,11 @@ pub struct Entry {
     pub extension: Option<String>,
     pub size: Option<u64>,
     pub modified: Option<String>,
-    pub read_only: bool,
     pub children_count: Option<usize>,
     pub children: Option<Vec<Entry>>,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub is_post: bool,
 }
 
 pub fn generate_metadata(root: &Path) -> std::io::Result<Entry> {
@@ -68,7 +70,6 @@ fn build_entry(path: &Path, root: &Path) -> std::io::Result<Entry> {
         .into_owned();
 
     let modified = meta.modified().ok().map(format_system_time);
-    let read_only = meta.permissions().readonly();
     let extension = path
         .extension()
         .and_then(|os| os.to_str())
@@ -79,6 +80,7 @@ fn build_entry(path: &Path, root: &Path) -> std::io::Result<Entry> {
         None
     };
 
+    let mut is_post = false;
     let children = if matches!(kind, EntryKind::Directory) && !file_type.is_symlink() {
         let mut entries = Vec::new();
         for child in fs::read_dir(path)? {
@@ -88,6 +90,12 @@ fn build_entry(path: &Path, root: &Path) -> std::io::Result<Entry> {
         }
         entries.sort_by(|a, b| a.name.cmp(&b.name));
         let count = entries.len();
+        let contains_index = entries.iter().any(|entry| {
+            matches!(entry.kind, EntryKind::File) && entry.name.eq_ignore_ascii_case("index.md")
+        });
+        if contains_index {
+            is_post = true;
+        }
         Some((entries, count))
     } else {
         None
@@ -96,6 +104,17 @@ fn build_entry(path: &Path, root: &Path) -> std::io::Result<Entry> {
     let (children, children_count) = match children {
         Some((entries, count)) => (Some(entries), Some(count)),
         None => (None, None),
+    };
+
+    let (title, description) = if matches!(kind, EntryKind::File)
+        && extension
+            .as_deref()
+            .map(|ext| ext.eq_ignore_ascii_case("md"))
+            == Some(true)
+    {
+        markdown_front_matter(path)?
+    } else {
+        (None, None)
     };
 
     Ok(Entry {
@@ -109,12 +128,55 @@ fn build_entry(path: &Path, root: &Path) -> std::io::Result<Entry> {
         extension,
         size,
         modified,
-        read_only,
         children_count,
         children,
+        title,
+        description,
+        is_post,
     })
 }
 
 fn format_system_time(ts: SystemTime) -> String {
     format_rfc3339(ts).to_string()
+}
+
+fn markdown_front_matter(path: &Path) -> io::Result<(Option<String>, Option<String>)> {
+    let content = fs::read_to_string(path)?;
+    Ok(parse_front_matter(&content))
+}
+
+fn parse_front_matter(content: &str) -> (Option<String>, Option<String>) {
+    let mut lines = content.lines().peekable();
+
+    // Skip leading empty lines before checking for the front matter fence.
+    while let Some(line) = lines.next() {
+        if line.trim().is_empty() {
+            continue;
+        }
+
+        if line.trim() != "--" {
+            return (None, None);
+        }
+
+        let mut title = None;
+        let mut description = None;
+
+        for line in lines.by_ref() {
+            let trimmed = line.trim();
+
+            if trimmed == "--" {
+                break;
+            }
+
+            if let Some(value) = trimmed.strip_prefix("title:") {
+                title = Some(value.trim().to_string());
+            } else if let Some(value) = trimmed.strip_prefix("description:") {
+                description = Some(value.trim().to_string());
+            }
+        }
+
+        return (title, description);
+    }
+
+    (None, None)
 }
