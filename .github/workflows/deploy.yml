@@ -18,24 +18,25 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Setup node
-        uses: actions/setup-node@v4
+      - uses: jetli/trunk-action@v0.5.1
         with:
-          node-version: 22
+          version: 'latest'
 
       - name: Install Rust target
         run: rustup target add wasm32-unknown-unknown
 
       - name: Generate metadata
-        run: node ./generate_metadata.js
+        working-directory: ./app
+        run: cargo xtask metadata-generate
 
       - name: Build
-        run: sh build.sh
+        working-directory: ./app
+        run: trunk build
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
-          publish-dir: './dist'
+          publish-dir: './app/dist'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"
