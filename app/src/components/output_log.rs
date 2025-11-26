@@ -21,6 +21,7 @@ fn render_line(idx: usize, line: &TermLine) -> Html {
         OutputKind::Text => html! { &line.body },
         OutputKind::Html => Html::from_html_unchecked(AttrValue::from(line.body.clone())),
         OutputKind::Error => Html::from_html_unchecked(AttrValue::from(line.body.clone())),
+        OutputKind::Component => line.node.clone().unwrap_or_else(|| html! {}),
     };
 
     let text_class = match line.kind {

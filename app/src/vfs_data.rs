@@ -11,6 +11,9 @@ pub struct VfsNode {
     pub modified: Option<String>,
     pub children_count: Option<usize>,
     pub children: Option<Vec<VfsNode>>,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub is_post: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
