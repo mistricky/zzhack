@@ -6,12 +6,10 @@ use shell_parser::CommandSpec;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Disk usage")]
-struct DuCli {
+pub struct DuCommand {
     #[arg(positional, help = "Path to inspect")]
     path: Option<String>,
 }
-
-pub struct DuCommand;
 
 impl ExecutableCommand<CommandContext> for DuCommand {
     fn name(&self) -> &'static str {
@@ -27,7 +25,7 @@ impl ExecutableCommand<CommandContext> for DuCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<DuCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<DuCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let target = cli.path.as_deref().unwrap_or(".");

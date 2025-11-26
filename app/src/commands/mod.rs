@@ -58,18 +58,18 @@ pub fn parse_cli<T: Parser>(args: &[String], ctx: &CommandContext, label: &str) 
 
 pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
     vec![
-        Box::new(EchoCommand),
-        Box::new(LsCommand),
-        Box::new(CatCommand),
-        Box::new(CdCommand),
-        Box::new(StatCommand),
-        Box::new(DuCommand),
-        Box::new(FetchCommand),
-        Box::new(BoaCommand),
-        Box::new(RenderCommand),
-        Box::new(ClearCommand),
-        Box::new(PwdCommand),
-        Box::new(EmailCommand),
-        Box::new(WhoAmICommand),
+        Box::new(EchoCommand::default()),
+        Box::new(LsCommand::default()),
+        Box::new(CatCommand::default()),
+        Box::new(CdCommand::default()),
+        Box::new(StatCommand::default()),
+        Box::new(DuCommand::default()),
+        Box::new(FetchCommand::default()),
+        Box::new(BoaCommand::default()),
+        Box::new(RenderCommand::default()),
+        Box::new(ClearCommand::default()),
+        Box::new(PwdCommand::default()),
+        Box::new(EmailCommand::default()),
+        Box::new(WhoAmICommand::default()),
     ]
 }

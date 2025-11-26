@@ -5,8 +5,6 @@ use shell_parser::CommandSpec;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Clear the terminal")]
-struct ClearCli;
-
 pub struct ClearCommand;
 
 impl ExecutableCommand<CommandContext> for ClearCommand {
@@ -23,7 +21,7 @@ impl ExecutableCommand<CommandContext> for ClearCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let _ = parse_cli::<ClearCli>(args, ctx, self.name());
+        let _ = parse_cli::<ClearCommand>(args, ctx, self.name());
         ctx.terminal.clear();
         Ok(())
     }

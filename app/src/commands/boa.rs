@@ -9,12 +9,10 @@ use wasm_bindgen_futures::spawn_local;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Run a JavaScript file with Boa")]
-struct BoaCli {
+pub struct BoaCommand {
     #[arg(positional, help = "Script path")]
     path: String,
 }
-
-pub struct BoaCommand;
 
 impl ExecutableCommand<CommandContext> for BoaCommand {
     fn name(&self) -> &'static str {
@@ -30,7 +28,7 @@ impl ExecutableCommand<CommandContext> for BoaCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<BoaCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<BoaCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let ctx = ctx.clone();
@@ -41,7 +39,7 @@ impl ExecutableCommand<CommandContext> for BoaCommand {
     }
 }
 
-async fn run_boa(cli: BoaCli, ctx: CommandContext) {
+async fn run_boa(cli: BoaCommand, ctx: CommandContext) {
     let target = &cli.path;
     let path = resolve_path(&ctx.terminal.cwd(), target);
     let Some(node) = find_node(&ctx.vfs, &path) else {

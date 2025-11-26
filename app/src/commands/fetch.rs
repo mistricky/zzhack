@@ -9,12 +9,10 @@ use wasm_bindgen_futures::{spawn_local, JsFuture};
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Fetch a remote resource")]
-struct FetchCli {
+pub struct FetchCommand {
     #[arg(positional, help = "URI to fetch")]
     uri: String,
 }
-
-pub struct FetchCommand;
 
 pub async fn fetch_text_with_cache(uri: &str, cache: &Rc<CacheService>) -> Result<String, String> {
     let uri_refresh = uri.to_string();
@@ -53,7 +51,7 @@ impl ExecutableCommand<CommandContext> for FetchCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<FetchCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<FetchCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
 
