@@ -9,7 +9,7 @@ use yew::prelude::*;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "List directory contents")]
-struct LsCli {
+pub struct LsCommand {
     #[arg(positional, help = "Path to list")]
     path: Option<String>,
     #[arg(
@@ -19,8 +19,6 @@ struct LsCli {
     )]
     posts: bool,
 }
-
-pub struct LsCommand;
 
 impl ExecutableCommand<CommandContext> for LsCommand {
     fn name(&self) -> &'static str {
@@ -36,7 +34,7 @@ impl ExecutableCommand<CommandContext> for LsCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<LsCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<LsCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let target = cli.path.as_deref().unwrap_or(".");

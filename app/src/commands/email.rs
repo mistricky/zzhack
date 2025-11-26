@@ -7,15 +7,13 @@ use web_sys::window;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Display or send an email to the configured author")]
-struct EmailCli {
+pub struct EmailCommand {
     #[arg(
         positional,
         help = "Optional subject/body to include in the mailto link"
     )]
     message: Vec<String>,
 }
-
-pub struct EmailCommand;
 
 impl ExecutableCommand<CommandContext> for EmailCommand {
     fn name(&self) -> &'static str {
@@ -31,7 +29,7 @@ impl ExecutableCommand<CommandContext> for EmailCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<EmailCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<EmailCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
 

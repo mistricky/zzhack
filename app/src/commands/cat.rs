@@ -8,12 +8,10 @@ use wasm_bindgen_futures::spawn_local;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Print file contents")]
-struct CatCli {
+pub struct CatCommand {
     #[arg(positional, help = "Path to file")]
     path: String,
 }
-
-pub struct CatCommand;
 
 impl ExecutableCommand<CommandContext> for CatCommand {
     fn name(&self) -> &'static str {
@@ -29,7 +27,7 @@ impl ExecutableCommand<CommandContext> for CatCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<CatCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<CatCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let ctx = ctx.clone();
@@ -40,7 +38,7 @@ impl ExecutableCommand<CommandContext> for CatCommand {
     }
 }
 
-async fn run_cat(cli: CatCli, ctx: CommandContext) {
+async fn run_cat(cli: CatCommand, ctx: CommandContext) {
     let target = &cli.path;
 
     let path = resolve_path(&ctx.terminal.cwd(), target);

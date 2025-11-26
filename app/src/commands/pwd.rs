@@ -6,8 +6,6 @@ use shell_parser::CommandSpec;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Print working directory")]
-struct PwdCli;
-
 pub struct PwdCommand;
 
 impl ExecutableCommand<CommandContext> for PwdCommand {
@@ -24,7 +22,7 @@ impl ExecutableCommand<CommandContext> for PwdCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let _ = parse_cli::<PwdCli>(args, ctx, self.name());
+        let _ = parse_cli::<PwdCommand>(args, ctx, self.name());
         ctx.terminal.push_text(format_path(&ctx.terminal.cwd()));
         Ok(())
     }

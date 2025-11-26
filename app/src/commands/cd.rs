@@ -6,12 +6,10 @@ use shell_parser::CommandSpec;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Change directory")]
-struct CdCli {
+pub struct CdCommand {
     #[arg(positional, help = "Directory path")]
     path: Option<String>,
 }
-
-pub struct CdCommand;
 
 impl ExecutableCommand<CommandContext> for CdCommand {
     fn name(&self) -> &'static str {
@@ -27,7 +25,7 @@ impl ExecutableCommand<CommandContext> for CdCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<CdCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<CdCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let target = cli.path.as_deref().unwrap_or("/");

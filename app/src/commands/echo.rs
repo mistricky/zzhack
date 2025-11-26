@@ -6,12 +6,10 @@ use web_sys::console;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Echo text")]
-struct EchoCli {
+pub struct EchoCommand {
     #[arg(positional, help = "Text to echo")]
     message: Vec<String>,
 }
-
-pub struct EchoCommand;
 
 impl ExecutableCommand<CommandContext> for EchoCommand {
     fn name(&self) -> &'static str {
@@ -27,7 +25,7 @@ impl ExecutableCommand<CommandContext> for EchoCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<EchoCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<EchoCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let msg = cli.message.join(" ");

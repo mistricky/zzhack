@@ -10,12 +10,10 @@ use yew::{html, AttrValue, Html};
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Render markdown content to HTML")]
-struct RenderCli {
+pub struct RenderCommand {
     #[arg(positional, help = "Path to markdown file")]
     path: String,
 }
-
-pub struct RenderCommand;
 
 impl ExecutableCommand<CommandContext> for RenderCommand {
     fn name(&self) -> &'static str {
@@ -31,7 +29,7 @@ impl ExecutableCommand<CommandContext> for RenderCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<RenderCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<RenderCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let ctx = ctx.clone();
@@ -42,7 +40,7 @@ impl ExecutableCommand<CommandContext> for RenderCommand {
     }
 }
 
-async fn run_render(cli: RenderCli, ctx: CommandContext) {
+async fn run_render(cli: RenderCommand, ctx: CommandContext) {
     let target = &cli.path;
 
     let mut path = resolve_path(&ctx.terminal.cwd(), target);

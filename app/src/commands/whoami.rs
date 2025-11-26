@@ -5,8 +5,6 @@ use shell_parser::CommandSpec;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Show configured author name")]
-struct WhoAmICli;
-
 pub struct WhoAmICommand;
 
 impl ExecutableCommand<CommandContext> for WhoAmICommand {
@@ -23,7 +21,7 @@ impl ExecutableCommand<CommandContext> for WhoAmICommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(_cli) = parse_cli::<WhoAmICli>(args, ctx, self.name()) else {
+        let Some(_cli) = parse_cli::<WhoAmICommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let name = &ctx.config.author.name;

@@ -6,12 +6,10 @@ use shell_parser::CommandSpec;
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Display file or directory metadata")]
-struct StatCli {
+pub struct StatCommand {
     #[arg(positional, help = "Path to inspect")]
     path: String,
 }
-
-pub struct StatCommand;
 
 impl ExecutableCommand<CommandContext> for StatCommand {
     fn name(&self) -> &'static str {
@@ -27,7 +25,7 @@ impl ExecutableCommand<CommandContext> for StatCommand {
     }
 
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<StatCli>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<StatCommand>(args, ctx, self.name()) else {
             return Ok(());
         };
         let path = resolve_path(&ctx.terminal.cwd(), &cli.path);
