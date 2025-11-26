@@ -1,6 +1,7 @@
 use crate::cache_service::CacheService;
 use crate::commands::{command_handlers, CommandContext};
 use crate::commands_history_service::CommandHistory;
+use crate::config_service::ConfigService;
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
 use shell_parser::integration::ExecutableCommand;
@@ -131,10 +132,12 @@ impl Terminal {
 
     pub async fn execute_command(&self, input: &str) {
         let cache = self.cache.clone();
+        let config = ConfigService::get();
         let ctx = CommandContext {
             vfs: self.vfs.clone(),
             cache,
             terminal: self.clone(),
+            config,
         };
 
         let mut specs = Vec::with_capacity(self.handlers.len());
