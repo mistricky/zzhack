@@ -9,6 +9,8 @@
     --color-text: #0f172a;
     --color-hover: rgba(208, 215, 226, 0.4);
     --color-halo: #3b82f6;
+    --color-post: #9b9b9b;
+    --color-post-hover: #ffffff;
 }
 
 :root.theme-dark {
@@ -18,6 +20,8 @@
     --color-text: #e2e8f0;
     --color-hover: rgba(28, 28, 28, 0.15);
     --color-halo: #3b82f6;
+    --color-post: #9b9b9b;
+    --color-post-hover: #ffffff;
 }
 
 @keyframes halo-drift {

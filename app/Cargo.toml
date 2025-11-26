@@ -45,3 +45,4 @@ pulldown-cmark = "0.9"
 boa_engine = "0.21"
 getrandom = { version = "0.3", features = ["wasm_js"] }
 micro_cli = { path = "../micro_cli" }
+time = { version = "0.3", features = ["formatting", "parsing"] }
