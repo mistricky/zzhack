@@ -3,33 +3,20 @@ use crate::commands::{parse_cli, CommandContext};
 use crate::markdown_renderer::MarkdownRenderer;
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind, VfsNode};
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use wasm_bindgen_futures::spawn_local;
 use yew::{html, AttrValue, Html};
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Render markdown content to HTML")]
+#[command(name = "render", about = "Render markdown content to HTML")]
 pub struct RenderCommand {
     #[arg(positional, help = "Path to markdown file")]
     path: String,
 }
 
 impl ExecutableCommand<CommandContext> for RenderCommand {
-    fn name(&self) -> &'static str {
-        "render"
-    }
-
-    fn description(&self) -> &'static str {
-        "Render markdown content to HTML"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("render").with_min_args(1).with_max_args(1)
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<RenderCommand>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<RenderCommand>(args, ctx, self.command_name()) else {
             return Ok(());
         };
         let ctx = ctx.clone();

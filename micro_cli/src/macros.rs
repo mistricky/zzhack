@@ -45,11 +45,9 @@ macro_rules! cli {
     (
         name: $name:expr,
         about: $about:expr,
-        $(version: $version:expr,)?
         commands: [ $($cmd:expr),* $(,)? ]
     ) => {{
         let mut app = $crate::CliApp::new($name, $about);
-        $( app = app.version($version); )?
         app = app.commands(vec![ $($cmd),* ]);
         app
     }};

@@ -141,10 +141,11 @@ impl Terminal {
         };
 
         let mut specs = Vec::with_capacity(self.handlers.len());
-        let mut map: HashMap<&str, &Box<dyn ExecutableCommand<CommandContext>>> = HashMap::new();
+        let mut map: HashMap<String, &Box<dyn ExecutableCommand<CommandContext>>> = HashMap::new();
         for handler in self.handlers.iter() {
-            specs.push(handler.spec());
-            map.insert(handler.name(), handler);
+            let spec = handler.spec();
+            map.insert(spec.name.clone(), handler);
+            specs.push(spec);
         }
 
         let parser = ShellParser::with_commands(specs);

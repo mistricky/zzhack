@@ -3,32 +3,19 @@ use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
 use boa_engine::{Context, Source};
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use wasm_bindgen_futures::spawn_local;
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Run a JavaScript file with Boa")]
+#[command(name = "boa", about = "Run a JavaScript file with Boa")]
 pub struct BoaCommand {
     #[arg(positional, help = "Script path")]
     path: String,
 }
 
 impl ExecutableCommand<CommandContext> for BoaCommand {
-    fn name(&self) -> &'static str {
-        "boa"
-    }
-
-    fn description(&self) -> &'static str {
-        "Run a JavaScript file with Boa"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("boa").with_min_args(1).with_max_args(1)
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<BoaCommand>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<BoaCommand>(args, ctx, self.command_name()) else {
             return Ok(());
         };
         let ctx = ctx.clone();

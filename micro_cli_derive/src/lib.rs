@@ -22,8 +22,8 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
 
 #[derive(Default, Clone)]
 struct CommandMeta {
+    name: Option<syn::LitStr>,
     about: Option<syn::LitStr>,
-    version: Option<syn::LitStr>,
 }
 
 #[derive(Default, Clone)]
@@ -63,9 +63,14 @@ fn parse_command_meta(attrs: &[Attribute]) -> syn::Result<CommandMeta> {
             if nested.path.is_ident("about") {
                 let lit: syn::LitStr = nested.value()?.parse()?;
                 meta.about = Some(lit);
-            } else if nested.path.is_ident("version") {
+            } else if nested.path.is_ident("name") {
                 let lit: syn::LitStr = nested.value()?.parse()?;
-                meta.version = Some(lit);
+                meta.name = Some(lit);
+            } else if nested.path.is_ident("version") {
+                return Err(syn::Error::new(
+                    nested.path.span(),
+                    "`version` is not supported; micro_cli CLIs do not expose version flags",
+                ));
             }
             Ok(())
         })?;
@@ -139,6 +144,7 @@ fn expand_struct(
     let mut help_lines = Vec::new();
     let mut subcommand_field: Option<Ident> = None;
     let mut needs_positionals_iter = false;
+    let mut has_required_fields = false;
 
     for field in data.fields.iter() {
         let fname = field
@@ -221,6 +227,7 @@ fn expand_struct(
                         };
                     }
                 } else {
+                    has_required_fields = true;
                     quote! {
                         let #fname: #ty = #fname
                             .take()
@@ -275,6 +282,7 @@ fn expand_struct(
                     };
                 }
             } else {
+                has_required_fields = true;
                 quote! {
                     let #fname: #ty = #fname
                         .take()
@@ -309,10 +317,10 @@ fn expand_struct(
         .about
         .clone()
         .unwrap_or_else(|| syn::LitStr::new(&format!("{} options", ident), ident.span()));
-    let version_lit = meta
-        .version
+    let name_lit = meta
+        .name
         .clone()
-        .unwrap_or_else(|| syn::LitStr::new("0.1.0", ident.span()));
+        .unwrap_or_else(|| syn::LitStr::new(&ident.to_string(), ident.span()));
 
     let subcommand_parse = if let Some(field) = subcommand_field {
         quote! {
@@ -346,20 +354,22 @@ fn expand_struct(
                 #(#declarations)*
                 let mut positionals: Vec<String> = Vec::new();
 
+                if #has_required_fields && iter.peek().is_none() {
+                    return Err(::micro_cli::CliError::Help(Self::help()));
+                }
+
                 while let Some(token) = iter.next() {
                     if token == "--help" || token == "-h" {
                         return Err(::micro_cli::CliError::Help(Self::help()));
                     }
-                    if token == "--version" || token == "-v" {
-                        return Err(::micro_cli::CliError::Help(format!(
-                            "{} {}",
-                            stringify!(#ident),
-                            #version_lit
-                        )));
-                    }
                     match token.as_str() {
                         #(#match_arms)*
-                        _ => positionals.push(token),
+                        _ => {
+                            if token.starts_with('-') {
+                                return Err(::micro_cli::CliError::UnknownOption(token));
+                            }
+                            positionals.push(token);
+                        }
                     }
                 }
 
@@ -374,7 +384,7 @@ fn expand_struct(
 
             fn help() -> String {
                 let mut lines = Vec::new();
-                lines.push(format!("{} v{}\n{}", stringify!(#ident), #version_lit, #about_lit));
+                lines.push(format!("{}\n{}", stringify!(#ident), #about_lit));
                 #(#help_lines)*
                 lines.join("\n")
             }
@@ -384,12 +394,23 @@ fn expand_struct(
             }
 
             fn name() -> &'static str {
-                stringify!(#ident)
+                #name_lit
             }
         }
     };
 
-    Ok(expanded)
+    let command_info_impl = quote! {
+        impl shell_parser::integration::CommandInfo for #ident {
+            fn command_name(&self) -> &'static str {
+                #name_lit
+            }
+        }
+    };
+
+    Ok(quote! {
+        #expanded
+        #command_info_impl
+    })
 }
 
 fn expand_enum(
@@ -464,10 +485,10 @@ fn expand_enum(
         .about
         .clone()
         .unwrap_or_else(|| syn::LitStr::new(&format!("{} subcommands", ident), ident.span()));
-    let version_lit = meta
-        .version
+    let name_lit = meta
+        .name
         .clone()
-        .unwrap_or_else(|| syn::LitStr::new("0.1.0", ident.span()));
+        .unwrap_or_else(|| syn::LitStr::new(&ident.to_string(), ident.span()));
 
     let expanded = quote! {
         impl #ident {
@@ -497,14 +518,21 @@ fn expand_enum(
             }
 
             pub fn name() -> &'static str {
-                stringify!(#ident)
-            }
-
-            pub fn version() -> &'static str {
-                #version_lit
+                #name_lit
             }
         }
     };
 
-    Ok(expanded)
+    let command_info_impl = quote! {
+        impl shell_parser::integration::CommandInfo for #ident {
+            fn command_name(&self) -> &'static str {
+                #name_lit
+            }
+        }
+    };
+
+    Ok(quote! {
+        #expanded
+        #command_info_impl
+    })
 }

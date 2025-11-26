@@ -146,17 +146,16 @@ fn derives_parser_style() {
     let help = GreetArgs::help();
     assert!(help.contains("name"));
     assert!(help.contains("count"));
+    assert!(!help.contains("version"));
 
     let help_err = GreetArgs::parse_from(Vec::<String>::new()).unwrap_err();
     assert!(matches!(help_err, CliError::Help(_)));
 
     let version_err = GreetArgs::parse_from(vec!["--version".to_string()]).unwrap_err();
-    if let CliError::Help(text) = version_err {
-        assert!(text.contains("GreetArgs"));
-        assert!(text.contains("0.1.0"));
-    } else {
-        panic!("expected help for version");
-    }
+    assert!(matches!(
+        version_err,
+        CliError::UnknownOption(ref flag) if flag == "--version"
+    ));
 
     assert_eq!(GreetArgs::name(), "GreetArgs");
     assert_eq!(GreetArgs::description(), "Greet");

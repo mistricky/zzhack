@@ -2,13 +2,12 @@ use crate::commands::{parse_cli, CommandContext};
 use crate::components::PostItem;
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind, VfsNode};
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use std::cmp::Ordering;
 use yew::prelude::*;
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "List directory contents")]
+#[command(name = "ls", about = "List directory contents")]
 pub struct LsCommand {
     #[arg(positional, help = "Path to list")]
     path: Option<String>,
@@ -21,20 +20,8 @@ pub struct LsCommand {
 }
 
 impl ExecutableCommand<CommandContext> for LsCommand {
-    fn name(&self) -> &'static str {
-        "ls"
-    }
-
-    fn description(&self) -> &'static str {
-        "List directory contents"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("ls").with_max_args(2)
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<LsCommand>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<LsCommand>(args, ctx, self.command_name()) else {
             return Ok(());
         };
         let target = cli.path.as_deref().unwrap_or(".");

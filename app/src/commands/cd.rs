@@ -1,31 +1,18 @@
 use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Change directory")]
+#[command(name = "cd", about = "Change directory")]
 pub struct CdCommand {
     #[arg(positional, help = "Directory path")]
     path: Option<String>,
 }
 
 impl ExecutableCommand<CommandContext> for CdCommand {
-    fn name(&self) -> &'static str {
-        "cd"
-    }
-
-    fn description(&self) -> &'static str {
-        "Change directory"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("cd").with_max_args(1)
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<CdCommand>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<CdCommand>(args, ctx, self.command_name()) else {
             return Ok(());
         };
         let target = cli.path.as_deref().unwrap_or("/");

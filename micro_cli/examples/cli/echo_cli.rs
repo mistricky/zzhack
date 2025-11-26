@@ -1,11 +1,10 @@
 use micro_cli::{CliError, Parser};
-use shell_parser::command::CommandSpec;
 use shell_parser::integration::ExecutableCommand;
 
 use super::RunnerContext;
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Echo text", version = "0.1.0")]
+#[command(name = "echo", about = "Echo text")]
 pub struct EchoCli {
     #[arg(short = 'n', long = "name", help = "Name to greet")]
     pub name: String,
@@ -19,18 +18,6 @@ pub struct EchoCli {
 }
 
 impl ExecutableCommand<RunnerContext> for EchoCli {
-    fn name(&self) -> &'static str {
-        "echo"
-    }
-
-    fn description(&self) -> &'static str {
-        "Echo text"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new(self.name())
-    }
-
     fn run(&self, args: &[String], context: &RunnerContext) -> Result<(), String> {
         let parsed = match EchoCli::parse_from(args.to_vec()) {
             Ok(ok) => ok,

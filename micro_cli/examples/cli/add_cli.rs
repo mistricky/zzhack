@@ -1,11 +1,10 @@
 use micro_cli::{CliError, Parser};
-use shell_parser::command::CommandSpec;
 use shell_parser::integration::ExecutableCommand;
 
 use super::RunnerContext;
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Add two numbers", version = "0.1.0")]
+#[command(name = "add", about = "Add two numbers")]
 pub struct AddCli {
     #[arg(short = 'l', long = "lhs", help = "Left-hand side")]
     pub lhs: i32,
@@ -14,18 +13,6 @@ pub struct AddCli {
 }
 
 impl ExecutableCommand<RunnerContext> for AddCli {
-    fn name(&self) -> &'static str {
-        "add"
-    }
-
-    fn description(&self) -> &'static str {
-        "Add two numbers"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new(self.name())
-    }
-
     fn run(&self, args: &[String], context: &RunnerContext) -> Result<(), String> {
         let parsed = match AddCli::parse_from(args.to_vec()) {
             Ok(ok) => ok,
