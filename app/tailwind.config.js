@@ -3,9 +3,18 @@ module.exports = {
   content: {
     files: ["src/**/*.rs", "index.html"],
   },
-  darkMode: "media", // 'media' or 'class'
+  darkMode: "class",
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        page: "var(--color-page-bg)",
+        card: "var(--color-card-bg)",
+        border: "var(--color-border)",
+        text: "var(--color-text)",
+        hover: "var(--color-hover)",
+        halo: "var(--color-halo)",
+      },
+    },
   },
   variants: {
     extend: {},

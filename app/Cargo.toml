@@ -17,9 +17,12 @@ tracing-subscriber = { version = "0.3", features = ["fmt"] }
 tracing-web = "0.1"
 web-sys = { version = "0.3", features = [
     "Window",
+    "Document",
     "Response",
     "Request",
     "Navigator",
+    "Element",
+    "DomTokenList",
     "StorageManager",
     "FileSystemDirectoryHandle",
     "FileSystemFileHandle",
