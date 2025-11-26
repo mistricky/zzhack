@@ -1,5 +1,6 @@
 use crate::commands_history_service::CommandHistory;
 use crate::components::{HistoryDirection, TerminalWindow};
+use crate::config_service::ConfigService;
 use crate::terminal::Terminal;
 use crate::types::TermLine;
 use std::cell::RefCell;
@@ -86,6 +87,9 @@ pub fn app() -> Html {
         })
     };
 
+    let config = ConfigService::get();
+    let show_window = config.app.terminal_window;
+
     html! {
         <TerminalWindow
             lines={displayed_lines}
@@ -93,6 +97,7 @@ pub fn app() -> Html {
             on_input={on_input}
             on_submit={on_submit}
             on_history_nav={on_history_nav}
+            show_window={show_window}
         />
     }
 }

@@ -1,0 +1,9 @@
+[app]
+name = "zzhack"
+terminal_window = false
+mac_title_bar = true
+prompt_placeholder = "Type a command and press Enter ⏎"
+
+[author]
+name = "Mist"
+email = "mist.zzh@gmail.com"

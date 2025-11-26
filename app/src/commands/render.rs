@@ -1,11 +1,12 @@
 use crate::commands::fetch::fetch_text_with_cache;
 use crate::commands::{parse_cli, CommandContext};
-use crate::markdown_renderer::render_markdown_to_html;
-use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
+use crate::markdown_renderer::MarkdownRenderer;
+use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind, VfsNode};
 use micro_cli::Parser;
 use shell_parser::integration::ExecutableCommand;
 use shell_parser::CommandSpec;
 use wasm_bindgen_futures::spawn_local;
+use yew::{html, AttrValue, Html};
 
 #[derive(Parser, Debug, Default)]
 #[command(about = "Render markdown content to HTML")]
@@ -44,16 +45,41 @@ impl ExecutableCommand<CommandContext> for RenderCommand {
 async fn run_render(cli: RenderCli, ctx: CommandContext) {
     let target = &cli.path;
 
-    let path = resolve_path(&ctx.terminal.cwd(), target);
-    let Some(node) = find_node(&ctx.vfs, &path) else {
-        ctx.terminal
-            .push_error(format!("render: {}: no such file", format_path(&path)));
-        return;
+    let mut path = resolve_path(&ctx.terminal.cwd(), target);
+    let mut node = match find_node(&ctx.vfs, &path) {
+        Some(node) => node,
+        None => {
+            ctx.terminal
+                .push_error(format!("render: {}: no such file", format_path(&path)));
+            return;
+        }
     };
 
-    if node.kind != VfsKind::File {
+    if node.kind == VfsKind::Directory {
+        let index = node.children.as_ref().and_then(|children| {
+            children
+                .iter()
+                .find(|child| child.name.eq_ignore_ascii_case("index.md") && is_markdown(child))
+        });
+
+        match index {
+            Some(idx) => {
+                let mut new_path = path.clone();
+                new_path.push(idx.name.clone());
+                path = new_path;
+                node = idx;
+            }
+            None => {
+                ctx.terminal.push_error(format!(
+                    "render: {}: is a directory without index.md",
+                    format_path(&path)
+                ));
+                return;
+            }
+        }
+    } else if node.kind != VfsKind::File {
         ctx.terminal
-            .push_error(format!("render: {}: is a directory", format_path(&path)));
+            .push_error(format!("render: {}: is not a file", format_path(&path)));
         return;
     }
 
@@ -79,9 +105,21 @@ async fn run_render(cli: RenderCli, ctx: CommandContext) {
 
     match fetch_text_with_cache(&uri, &cache).await {
         Ok(content) => {
-            let rendered = render_markdown_to_html(&content);
-            ctx.terminal.push_html(rendered);
+            let rendered = MarkdownRenderer::new().render(&content);
+            let node: Html = html! {
+                <div class="py-6 pb-9 text-base text-post">
+                    { Html::from_html_unchecked(AttrValue::from(rendered)) }
+                </div>
+            };
+            ctx.terminal.push_component(node);
         }
         Err(err) => ctx.terminal.push_error(format!("render: {err}")),
     }
+}
+
+fn is_markdown(node: &VfsNode) -> bool {
+    node.extension
+        .as_deref()
+        .map(|ext| ext.eq_ignore_ascii_case("md"))
+        == Some(true)
 }

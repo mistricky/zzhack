@@ -1,6 +1,8 @@
 use web_sys::{HtmlInputElement, KeyboardEvent};
 use yew::prelude::*;
 
+use crate::config_service::ConfigService;
+
 #[derive(Properties, PartialEq)]
 pub struct PromptLineProps {
     pub value: String,
@@ -57,7 +59,7 @@ pub fn prompt_line(props: &PromptLineProps) -> Html {
                 value={props.value.clone()}
                 oninput={on_input}
                 onkeydown={on_keydown}
-                placeholder="type a command and press enter"
+                placeholder={ConfigService::get().app.prompt_placeholder.clone()}
                 autocomplete="off"
                 spellcheck="false"
             />

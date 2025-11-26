@@ -39,7 +39,7 @@ pub fn post_item(props: &PostItemProps) -> Html {
     };
 
     html! {
-        <div class="flex flex-col gap-1 text-[var(--color-post)] hover:text-[var(--color-post-hover)] hover:cursor-pointer transition-colors duration-150 text-base">
+        <div class="flex flex-col gap-1 text-post hover:text-post-hover hover:cursor-pointer transition-colors duration-150 text-base">
             <div class="flex items-center gap-3">
                 <span>{ title }</span>
                 if !meta_text.is_empty() {
