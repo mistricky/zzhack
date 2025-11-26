@@ -64,6 +64,7 @@ impl Terminal {
             body: body.into(),
             accent: false,
             kind: OutputKind::Text,
+            node: None,
         });
     }
 
@@ -72,6 +73,7 @@ impl Terminal {
             body: body.into(),
             accent: true,
             kind: OutputKind::Error,
+            node: None,
         });
     }
 
@@ -80,6 +82,16 @@ impl Terminal {
             body: body.into(),
             accent: false,
             kind: OutputKind::Html,
+            node: None,
+        });
+    }
+
+    pub fn push_component(&self, node: yew::Html) {
+        self.push_line(TermLine {
+            body: String::new(),
+            accent: false,
+            kind: OutputKind::Component,
+            node: Some(node),
         });
     }
 
@@ -107,6 +119,7 @@ impl Terminal {
             body: trimmed.clone(),
             accent: false,
             kind: OutputKind::Text,
+            node: None,
         });
 
         let mut next_history = (*history).clone();
