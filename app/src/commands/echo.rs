@@ -4,7 +4,7 @@ use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use web_sys::console;
 
 #[derive(Parser, Debug, Default)]
-#[command(name = "echo", about = "Echo text")]
+#[command(name = "echo", about = "Print the given text to the console")]
 pub struct EchoCommand {
     #[arg(positional, help = "Text to echo")]
     message: Vec<String>,

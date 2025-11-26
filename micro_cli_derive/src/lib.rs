@@ -141,7 +141,17 @@ fn expand_struct(
     let mut match_arms = Vec::new();
     let mut post_process = Vec::new();
     let mut field_inits = Vec::new();
-    let mut help_lines = Vec::new();
+    let mut option_help_lines = Vec::new();
+    let mut positional_help_lines = Vec::new();
+    let mut positional_names: Vec<syn::LitStr> = Vec::new();
+    let name_lit = meta
+        .name
+        .clone()
+        .unwrap_or_else(|| syn::LitStr::new(&ident.to_string(), ident.span()));
+    let about_lit = meta
+        .about
+        .clone()
+        .unwrap_or_else(|| syn::LitStr::new(&format!("{} options", ident), ident.span()));
     let mut subcommand_field: Option<Ident> = None;
     let mut needs_positionals_iter = false;
     let mut has_required_fields = false;
@@ -173,9 +183,10 @@ fn expand_struct(
             declarations.push(quote! { let mut #fname: Option<#ty> = None; });
             subcommand_field = Some(fname.clone());
             field_inits.push(quote! { #fname });
-            help_lines.push(
-                quote! { lines.push(String::from("  <SUBCOMMAND>       Run a subcommand")); },
-            );
+            positional_names.push(syn::LitStr::new("<SUBCOMMAND>", ident.span()));
+            positional_help_lines.push(quote! {
+                positional_lines.push(format!("{} [{}], {}", #name_lit, "<SUBCOMMAND>", "Run a subcommand"));
+            });
             continue;
         }
 
@@ -296,31 +307,23 @@ fn expand_struct(
 
         field_inits.push(quote! { #fname });
         if is_positional {
-            help_lines.push(quote! {
-                lines.push(format!("  {:<18} {}", #positional_lit, #help_text));
+            positional_help_lines.push(quote! {
+                positional_lines.push(format!("{} [{}], {}", #name_lit, #positional_lit, #help_text));
             });
+            positional_names.push(positional_lit.clone());
         } else {
-            help_lines.push(quote! {
-                {
+            option_help_lines.push(quote! {
+                option_lines.push({
                     let mut flags = Vec::new();
                     if let Some(ch) = #short_opt_expr {
                         flags.push(format!("-{}", ch));
                     }
                     flags.push(format!("--{}", #long));
-                    lines.push(format!("  {:<18} {}", flags.join(", "), #help_text));
-                }
+                    format!("{:<18} {}", flags.join(", "), #help_text)
+                });
             });
         }
     }
-
-    let about_lit = meta
-        .about
-        .clone()
-        .unwrap_or_else(|| syn::LitStr::new(&format!("{} options", ident), ident.span()));
-    let name_lit = meta
-        .name
-        .clone()
-        .unwrap_or_else(|| syn::LitStr::new(&ident.to_string(), ident.span()));
 
     let subcommand_parse = if let Some(field) = subcommand_field {
         quote! {
@@ -383,10 +386,42 @@ fn expand_struct(
             }
 
             fn help() -> String {
-                let mut lines = Vec::new();
-                lines.push(format!("{}\n{}", stringify!(#ident), #about_lit));
-                #(#help_lines)*
-                lines.join("\n")
+                let mut option_lines: Vec<String> = Vec::new();
+                let mut positional_lines: Vec<String> = Vec::new();
+                #(#option_help_lines)*
+                #(#positional_help_lines)*
+
+                let mut out = String::new();
+                out.push_str("Usage: ");
+                out.push_str(#name_lit);
+                if !option_lines.is_empty() {
+                    out.push_str(" [OPTIONS]");
+                }
+                let positional_names: &[&str] = &[#(#positional_names),*];
+                for name in positional_names {
+                    out.push_str(&format!(" [{}]", name));
+                }
+                out.push('\n');
+                out.push_str(&format!("{}\n", #about_lit));
+
+                if !option_lines.is_empty() {
+                    out.push('\n');
+                    out.push_str("Global options:\n");
+                    for line in &option_lines {
+                        out.push_str(&format!("  {}\n", line));
+                    }
+                    out.push_str("  -h, --help         Show help\n");
+                }
+
+                if !positional_lines.is_empty() {
+                    out.push('\n');
+                    out.push_str("Positional arguments:\n");
+                    for line in &positional_lines {
+                        out.push_str(&format!("  {}\n", line));
+                    }
+                }
+
+                out
             }
 
             fn description() -> String {
