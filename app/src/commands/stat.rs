@@ -1,31 +1,18 @@
 use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::{find_node, format_path, node_summary, resolve_path};
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Display file or directory metadata")]
+#[command(name = "stat", about = "Display file or directory metadata")]
 pub struct StatCommand {
     #[arg(positional, help = "Path to inspect")]
     path: String,
 }
 
 impl ExecutableCommand<CommandContext> for StatCommand {
-    fn name(&self) -> &'static str {
-        "stat"
-    }
-
-    fn description(&self) -> &'static str {
-        "Display file or directory metadata"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("stat").with_min_args(1).with_max_args(1)
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<StatCommand>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<StatCommand>(args, ctx, self.command_name()) else {
             return Ok(());
         };
         let path = resolve_path(&ctx.terminal.cwd(), &cli.path);

@@ -1,14 +1,13 @@
 use crate::cache_service::CacheService;
 use crate::commands::{parse_cli, CommandContext};
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::{spawn_local, JsFuture};
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Fetch a remote resource")]
+#[command(name = "fetch", about = "Fetch a remote resource")]
 pub struct FetchCommand {
     #[arg(positional, help = "URI to fetch")]
     uri: String,
@@ -38,20 +37,8 @@ pub async fn fetch_text_with_cache(uri: &str, cache: &Rc<CacheService>) -> Resul
 }
 
 impl ExecutableCommand<CommandContext> for FetchCommand {
-    fn name(&self) -> &'static str {
-        "fetch"
-    }
-
-    fn description(&self) -> &'static str {
-        "Fetch a remote resource"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("fetch").with_min_args(1).with_max_args(1)
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<FetchCommand>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<FetchCommand>(args, ctx, self.command_name()) else {
             return Ok(());
         };
 

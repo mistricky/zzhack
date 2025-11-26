@@ -2,32 +2,19 @@ use crate::commands::fetch::fetch_text_with_cache;
 use crate::commands::{parse_cli, CommandContext};
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use wasm_bindgen_futures::spawn_local;
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Print file contents")]
+#[command(name = "cat", about = "Print file contents")]
 pub struct CatCommand {
     #[arg(positional, help = "Path to file")]
     path: String,
 }
 
 impl ExecutableCommand<CommandContext> for CatCommand {
-    fn name(&self) -> &'static str {
-        "cat"
-    }
-
-    fn description(&self) -> &'static str {
-        "Print file contents"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("cat").with_min_args(1).with_max_args(1)
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<CatCommand>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<CatCommand>(args, ctx, self.command_name()) else {
             return Ok(());
         };
         let ctx = ctx.clone();

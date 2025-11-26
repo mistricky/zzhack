@@ -1,27 +1,14 @@
 use crate::commands::{parse_cli, CommandContext};
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Clear the terminal")]
+#[command(name = "clear", about = "Clear the terminal")]
 pub struct ClearCommand;
 
 impl ExecutableCommand<CommandContext> for ClearCommand {
-    fn name(&self) -> &'static str {
-        "clear"
-    }
-
-    fn description(&self) -> &'static str {
-        "Clear the terminal"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("clear").with_max_args(0)
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let _ = parse_cli::<ClearCommand>(args, ctx, self.name());
+        let _ = parse_cli::<ClearCommand>(args, ctx, self.command_name());
         ctx.terminal.clear();
         Ok(())
     }

@@ -139,7 +139,6 @@ impl Command {
 pub struct CliApp {
     pub name: &'static str,
     pub about: &'static str,
-    pub version: Option<&'static str>,
     pub commands: Vec<Command>,
 }
 
@@ -148,14 +147,8 @@ impl CliApp {
         Self {
             name,
             about,
-            version: None,
             commands: Vec::new(),
         }
-    }
-
-    pub fn version(mut self, version: &'static str) -> Self {
-        self.version = Some(version);
-        self
     }
 
     pub fn commands(mut self, commands: Vec<Command>) -> Self {

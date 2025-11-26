@@ -26,7 +26,6 @@ fn main() {
         echo --name Micro --count 2
         add --lhs 2 --rhs 3
         echo --help
-        echo -v
         add -h
     "#;
 

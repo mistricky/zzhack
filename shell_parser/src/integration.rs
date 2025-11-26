@@ -11,14 +11,22 @@ pub enum ShellCliError {
     Execution { command: String, message: String },
 }
 
-/// Trait implemented by higher-level CLI commands that can be executed after parsing.
-pub trait ExecutableCommand<C>: Send + Sync {
+/// Common metadata for CLI commands.
+pub trait CommandInfo {
     /// Name used in the script (e.g., `echo`).
-    fn name(&self) -> &'static str;
-    /// Human-readable description for help output.
-    fn description(&self) -> &'static str;
+    fn command_name(&self) -> &'static str;
     /// Specification for validation.
-    fn spec(&self) -> CommandSpec;
+    fn command_spec(&self) -> CommandSpec {
+        CommandSpec::new(self.command_name())
+    }
+}
+
+/// Trait implemented by higher-level CLI commands that can be executed after parsing.
+pub trait ExecutableCommand<C>: CommandInfo + Send + Sync {
+    /// Specification (includes name) for validation.
+    fn spec(&self) -> CommandSpec {
+        self.command_spec()
+    }
     /// Execute the command with already-parsed arguments.
     fn run(&self, args: &[String], context: &C) -> Result<(), String>;
 
@@ -38,6 +46,7 @@ pub trait ExecutableCommand<C>: Send + Sync {
 pub struct CliRunner<C> {
     parser: ShellParser,
     handlers: HashMap<String, Box<dyn ExecutableCommand<C>>>,
+    specs: Vec<CommandSpec>,
     context: C,
 }
 
@@ -77,18 +86,13 @@ impl<C> CliRunner<C> {
         Ok(())
     }
 
-    /// Render help text listing registered commands and their descriptions.
+    /// Render help text listing registered commands.
     pub fn help(&self) -> String {
-        let mut entries: Vec<(String, String)> = self
-            .handlers
-            .values()
-            .map(|h| (h.name().to_string(), h.description().to_string()))
-            .collect();
-        entries.sort_by(|a, b| a.0.cmp(&b.0));
-
+        let mut names: Vec<&str> = self.specs.iter().map(|spec| spec.name.as_str()).collect();
+        names.sort_unstable();
         let mut out = String::from("Commands:\n");
-        for (name, desc) in entries {
-            out.push_str(&format!("  {:<12} {}\n", name, desc));
+        for name in names {
+            out.push_str(&format!("  {}\n", name));
         }
         out
     }
@@ -129,17 +133,19 @@ where
     I: IntoIterator<Item = Box<dyn ExecutableCommand<C>>>,
 {
     let mut handlers = HashMap::new();
-    let mut specs = Vec::new();
+    let mut specs: Vec<CommandSpec> = Vec::new();
 
     for cmd in commands {
-        specs.push(cmd.spec());
-        handlers.insert(cmd.name().to_string(), cmd);
+        let spec = cmd.spec();
+        handlers.insert(spec.name.clone(), cmd);
+        specs.push(spec);
     }
 
-    let parser = ShellParser::with_commands(specs);
+    let parser = ShellParser::with_commands(specs.clone());
     CliRunner {
         parser,
         handlers,
+        specs,
         context,
     }
 }

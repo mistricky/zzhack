@@ -1,12 +1,14 @@
 use crate::commands::{parse_cli, CommandContext};
 use js_sys::encode_uri_component;
 use micro_cli::Parser;
-use shell_parser::integration::ExecutableCommand;
-use shell_parser::CommandSpec;
+use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use web_sys::window;
 
 #[derive(Parser, Debug, Default)]
-#[command(about = "Display or send an email to the configured author")]
+#[command(
+    name = "email",
+    about = "Display or send an email to the configured author"
+)]
 pub struct EmailCommand {
     #[arg(
         positional,
@@ -16,20 +18,8 @@ pub struct EmailCommand {
 }
 
 impl ExecutableCommand<CommandContext> for EmailCommand {
-    fn name(&self) -> &'static str {
-        "email"
-    }
-
-    fn description(&self) -> &'static str {
-        "Display author email or open mailto link"
-    }
-
-    fn spec(&self) -> CommandSpec {
-        CommandSpec::new("email")
-    }
-
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let Some(cli) = parse_cli::<EmailCommand>(args, ctx, self.name()) else {
+        let Some(cli) = parse_cli::<EmailCommand>(args, ctx, self.command_name()) else {
             return Ok(());
         };
 
