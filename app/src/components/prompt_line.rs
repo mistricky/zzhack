@@ -29,6 +29,7 @@ pub fn prompt_line(props: &PromptLineProps) -> Html {
 
     let on_keydown = {
         let on_history_nav = props.on_history_nav.clone();
+
         Callback::from(move |e: KeyboardEvent| match e.key().as_str() {
             "ArrowUp" => {
                 e.prevent_default();

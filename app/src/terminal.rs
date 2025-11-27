@@ -7,15 +7,17 @@ use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
 use shell_parser::integration::ExecutableCommand;
 use shell_parser::{ShellParseError, ShellParser};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use yew::{UseReducerHandle, UseStateHandle};
+use yew::UseReducerHandle;
 
 #[derive(Clone)]
 pub struct Terminal {
     state: UseReducerHandle<TerminalState>,
     vfs: Rc<VfsNode>,
     cache: Option<Rc<CacheService>>,
+    history: Rc<RefCell<CommandHistory>>,
     handlers: Rc<Vec<Box<dyn ExecutableCommand<CommandContext>>>>,
 }
 
@@ -29,10 +31,13 @@ impl Terminal {
             }
         };
 
+        let history = Rc::new(RefCell::new(CommandHistory::new(cache.clone()).await));
+
         Self {
             state,
             vfs: Rc::new(load_vfs()),
             cache,
+            history,
             handlers: Rc::new(command_handlers()),
         }
     }
@@ -89,7 +94,15 @@ impl Terminal {
         self.state.dispatch(TerminalAction::SetCwd(cwd));
     }
 
-    pub async fn process_command(&self, history: UseStateHandle<CommandHistory>, trimmed: String) {
+    pub fn cache(&self) -> Option<Rc<CacheService>> {
+        self.cache.clone()
+    }
+
+    pub fn history(&self) -> Rc<RefCell<CommandHistory>> {
+        self.history.clone()
+    }
+
+    pub async fn process_command(&self, trimmed: String) {
         self.push_line(TermLine {
             body: trimmed.clone(),
             accent: false,
@@ -97,9 +110,7 @@ impl Terminal {
             node: None,
         });
 
-        let mut next_history = (*history).clone();
-        next_history.push(trimmed.clone());
-        history.set(next_history);
+        self.history.borrow_mut().push(trimmed.clone());
 
         self.execute_command(&trimmed).await;
     }

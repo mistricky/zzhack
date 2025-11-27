@@ -1,4 +1,3 @@
-use crate::commands_history_service::CommandHistory;
 use crate::components::{HistoryDirection, TerminalWindow};
 use crate::config_service::ConfigService;
 use crate::terminal::Terminal;
@@ -13,14 +12,12 @@ struct SubmitState {
     terminal: Rc<RefCell<Option<Terminal>>>,
     terminal_ready: UseStateHandle<bool>,
     input: UseStateHandle<String>,
-    history: UseStateHandle<CommandHistory>,
 }
 
 #[function_component(App)]
 pub fn app() -> Html {
     let terminal_state = use_reducer(TerminalState::default);
     let input = use_state(String::new);
-    let history = use_state(CommandHistory::new);
     let terminal = use_mut_ref(|| Option::<Terminal>::None);
     let terminal_ready = use_state(|| false);
 
@@ -47,7 +44,6 @@ pub fn app() -> Html {
         terminal: terminal.clone(),
         terminal_ready: terminal_ready.clone(),
         input: input.clone(),
-        history: history.clone(),
     };
 
     let on_submit = {
@@ -58,18 +54,33 @@ pub fn app() -> Html {
     let displayed_lines = (*terminal_state).lines.clone();
 
     let on_history_nav = {
-        let history = history.clone();
+        let terminal = terminal.clone();
+        let terminal_ready = terminal_ready.clone();
         let input = input.clone();
         Callback::from(move |dir: HistoryDirection| {
-            let mut next = (*history).clone();
-            let replacement = match dir {
-                HistoryDirection::Previous => next.previous(),
-                HistoryDirection::Next => next.next(),
+            if !*terminal_ready {
+                return;
+            }
+
+            let history_handle = {
+                let term_ref = terminal.borrow();
+                let Some(term) = term_ref.as_ref() else {
+                    return;
+                };
+                term.history()
             };
+
+            let replacement = {
+                let mut hist = history_handle.borrow_mut();
+                match dir {
+                    HistoryDirection::Previous => hist.previous(),
+                    HistoryDirection::Next => hist.next(),
+                }
+            };
+
             if let Some(val) = replacement {
                 input.set(val);
             }
-            history.set(next);
         })
     };
 
@@ -100,8 +111,7 @@ fn handle_submit(state: SubmitState) {
         return;
     };
 
-    let history = state.history.clone();
     spawn_local(async move {
-        terminal.process_command(history, trimmed).await;
+        terminal.process_command(trimmed).await;
     });
 }
