@@ -104,9 +104,12 @@ impl Terminal {
 
     pub async fn process_command(&self, trimmed: String) {
         self.push_line(TermLine {
-            body: trimmed.clone(),
+            body: format!(
+                r#"<div class="text-sm mt-4 text-gray-600">{}</div>"#,
+                trimmed.clone()
+            ),
             accent: false,
-            kind: OutputKind::Text,
+            kind: OutputKind::Html,
             node: None,
         });
 
