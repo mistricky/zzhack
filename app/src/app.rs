@@ -2,11 +2,11 @@ use crate::commands_history_service::CommandHistory;
 use crate::components::{HistoryDirection, TerminalWindow};
 use crate::config_service::ConfigService;
 use crate::terminal::Terminal;
-use crate::types::TermLine;
+use crate::terminal_state::TerminalState;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
-use yew::{prelude::*, use_effect_with, use_mut_ref};
+use yew::{prelude::*, use_effect_with, use_mut_ref, use_reducer};
 
 #[derive(Clone)]
 struct SubmitState {
@@ -18,9 +18,8 @@ struct SubmitState {
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let lines = use_state(Vec::<TermLine>::new);
+    let terminal_state = use_reducer(TerminalState::default);
     let input = use_state(String::new);
-    let cwd = use_state(Vec::<String>::new);
     let history = use_state(CommandHistory::new);
     let terminal = use_mut_ref(|| Option::<Terminal>::None);
     let terminal_ready = use_state(|| false);
@@ -28,26 +27,13 @@ pub fn app() -> Html {
     {
         let terminal = terminal.clone();
         let terminal_ready = terminal_ready.clone();
-        let lines = lines.clone();
-        let cwd = cwd.clone();
+        let terminal_state = terminal_state.clone();
         use_effect_with((), move |_| {
             spawn_local(async move {
-                let built = Terminal::new(lines, cwd).await;
+                let built = Terminal::new(terminal_state).await;
                 *terminal.borrow_mut() = Some(built);
                 terminal_ready.set(true);
             });
-            || ()
-        });
-    }
-
-    {
-        let terminal = terminal.clone();
-        let lines = lines.clone();
-        let cwd = cwd.clone();
-        use_effect_with((lines.clone(), cwd.clone()), move |(lines, cwd)| {
-            if let Some(term) = terminal.borrow_mut().as_mut() {
-                term.update_state_handles(lines.clone(), cwd.clone());
-            }
             || ()
         });
     }
@@ -69,7 +55,7 @@ pub fn app() -> Html {
         Callback::from(move |_| handle_submit(submit_state.clone()))
     };
 
-    let displayed_lines = (*lines).clone();
+    let displayed_lines = (*terminal_state).lines.clone();
 
     let on_history_nav = {
         let history = history.clone();

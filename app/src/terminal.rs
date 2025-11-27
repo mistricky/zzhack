@@ -2,28 +2,25 @@ use crate::cache_service::CacheService;
 use crate::commands::{command_handlers, CommandContext};
 use crate::commands_history_service::CommandHistory;
 use crate::config_service::ConfigService;
+use crate::terminal_state::{TerminalAction, TerminalState};
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
 use shell_parser::integration::ExecutableCommand;
 use shell_parser::{ShellParseError, ShellParser};
 use std::collections::HashMap;
 use std::rc::Rc;
-use yew::UseStateHandle;
+use yew::{UseReducerHandle, UseStateHandle};
 
 #[derive(Clone)]
 pub struct Terminal {
-    lines: UseStateHandle<Vec<TermLine>>,
-    cwd: UseStateHandle<Vec<String>>,
+    state: UseReducerHandle<TerminalState>,
     vfs: Rc<VfsNode>,
     cache: Option<Rc<CacheService>>,
     handlers: Rc<Vec<Box<dyn ExecutableCommand<CommandContext>>>>,
 }
 
 impl Terminal {
-    pub async fn new(
-        lines: UseStateHandle<Vec<TermLine>>,
-        cwd: UseStateHandle<Vec<String>>,
-    ) -> Self {
+    pub async fn new(state: UseReducerHandle<TerminalState>) -> Self {
         let cache = match CacheService::new().await {
             Ok(service) => Some(Rc::new(service)),
             Err(err) => {
@@ -33,31 +30,19 @@ impl Terminal {
         };
 
         Self {
-            lines,
-            cwd,
+            state,
             vfs: Rc::new(load_vfs()),
             cache,
             handlers: Rc::new(command_handlers()),
         }
     }
 
-    pub fn update_state_handles(
-        &mut self,
-        lines: UseStateHandle<Vec<TermLine>>,
-        cwd: UseStateHandle<Vec<String>>,
-    ) {
-        self.lines = lines;
-        self.cwd = cwd;
-    }
-
     pub fn snapshot(&self) -> Vec<TermLine> {
-        (*self.lines).clone()
+        (*self.state).lines.clone()
     }
 
     pub fn push_line(&self, line: TermLine) {
-        let mut next = self.snapshot();
-        next.push(line);
-        self.lines.set(next);
+        self.state.dispatch(TerminalAction::PushLine(line));
     }
 
     pub fn push_text(&self, body: impl Into<String>) {
@@ -96,23 +81,16 @@ impl Terminal {
         });
     }
 
-    #[allow(dead_code)]
-    pub fn extend(&self, lines: impl IntoIterator<Item = TermLine>) {
-        let mut next = self.snapshot();
-        next.extend(lines);
-        self.lines.set(next);
-    }
-
     pub fn clear(&self) {
-        self.lines.set(Vec::new());
+        self.state.dispatch(TerminalAction::ClearLines);
     }
 
     pub fn cwd(&self) -> Vec<String> {
-        (*self.cwd).clone()
+        (*self.state).cwd.clone()
     }
 
     pub fn set_cwd(&self, cwd: Vec<String>) {
-        self.cwd.set(cwd);
+        self.state.dispatch(TerminalAction::SetCwd(cwd));
     }
 
     pub async fn process_command(&self, history: UseStateHandle<CommandHistory>, trimmed: String) {

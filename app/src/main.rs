@@ -6,6 +6,7 @@ mod components;
 mod config_service;
 mod markdown_renderer;
 mod terminal;
+mod terminal_state;
 mod types;
 mod utils;
 mod vfs_data;
