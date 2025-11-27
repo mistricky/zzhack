@@ -37,10 +37,6 @@ impl Terminal {
         }
     }
 
-    pub fn snapshot(&self) -> Vec<TermLine> {
-        (*self.state).lines.clone()
-    }
-
     pub fn push_line(&self, line: TermLine) {
         self.state.dispatch(TerminalAction::PushLine(line));
     }
