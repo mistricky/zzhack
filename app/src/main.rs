@@ -4,6 +4,7 @@ mod commands;
 mod commands_history_service;
 mod components;
 mod config_service;
+mod highlight_service;
 mod markdown_renderer;
 mod terminal;
 mod terminal_state;
