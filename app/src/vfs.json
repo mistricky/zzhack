@@ -4,9 +4,22 @@
   "kind": "directory",
   "extension": null,
   "size": null,
-  "modified": "2025-11-25T06:56:18.603899818Z",
-  "children_count": 8,
+  "modified": "2025-11-27T10:40:53.971013571Z",
+  "children_count": 9,
   "children": [
+    {
+      "name": "COVER.png",
+      "path": "COVER.png",
+      "kind": "file",
+      "extension": "png",
+      "size": 894385,
+      "modified": "2025-11-27T10:40:40.723013512Z",
+      "children_count": null,
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
+    },
     {
       "name": "a.js",
       "path": "a.js",
@@ -79,7 +92,7 @@
       "kind": "file",
       "extension": "png",
       "size": 114361,
-      "modified": "2025-11-25T06:56:11.336899245Z",
+      "modified": "2025-11-26T17:30:34.840631389Z",
       "children_count": null,
       "children": null,
       "title": null,

@@ -10,6 +10,7 @@ mod ls;
 mod pwd;
 mod render;
 mod stat;
+mod theme;
 mod whoami;
 
 use crate::cache_service::CacheService;
@@ -32,6 +33,7 @@ pub use ls::LsCommand;
 pub use pwd::PwdCommand;
 pub use render::RenderCommand;
 pub use stat::StatCommand;
+pub use theme::ThemeCommand;
 pub use whoami::WhoAmICommand;
 
 #[derive(Clone)]
@@ -71,5 +73,6 @@ pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
         Box::new(PwdCommand::default()),
         Box::new(EmailCommand::default()),
         Box::new(WhoAmICommand::default()),
+        Box::new(ThemeCommand::default()),
     ]
 }
