@@ -1,11 +1,13 @@
 use crate::commands::fetch::fetch_text_with_cache;
 use crate::commands::{parse_cli, CommandContext};
+use crate::components::markdown_renderer::{Avatar, Header};
+use crate::config_service::ConfigService;
 use crate::markdown_renderer::MarkdownRenderer;
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind, VfsNode};
 use micro_cli::Parser;
 use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use wasm_bindgen_futures::spawn_local;
-use yew::{html, AttrValue, Html};
+use yew::{html, Html};
 
 #[derive(Parser, Debug, Default)]
 #[command(name = "render", about = "Render markdown content to HTML")]
@@ -88,12 +90,19 @@ async fn run_render(cli: RenderCommand, ctx: CommandContext) {
         return;
     };
 
+    let author = ConfigService::get().author.clone();
+
     match fetch_text_with_cache(&uri, &cache).await {
         Ok(content) => {
             let rendered = MarkdownRenderer::new().render(&content);
             let node: Html = html! {
                 <div class="py-6 pb-9 text-base text-post">
-                    { Html::from_html_unchecked(AttrValue::from(rendered)) }
+                    <Header metadata={node.clone()} />
+                    <div class="flex items-center">
+                        <Avatar name={author.name.clone()} email={author.email.clone()} />
+                        <span class="text-base text-white ml-3">{&author.name}</span>
+                    </div>
+                    { rendered }
                 </div>
             };
             ctx.terminal.push_component(node);

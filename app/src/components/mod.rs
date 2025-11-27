@@ -1,4 +1,5 @@
 mod header_bar;
+pub mod markdown_renderer;
 mod output_log;
 mod post_item;
 mod prompt_line;

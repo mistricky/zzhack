@@ -16,6 +16,7 @@ pub struct AppSection {
 pub struct AuthorSection {
     pub name: String,
     pub email: String,
+    pub avatar: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

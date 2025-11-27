@@ -4,8 +4,8 @@
   "kind": "directory",
   "extension": null,
   "size": null,
-  "modified": "2025-11-27T10:40:53.971013571Z",
-  "children_count": 9,
+  "modified": "2025-11-27T12:26:51.166042061Z",
+  "children_count": 10,
   "children": [
     {
       "name": "COVER.png",
@@ -74,6 +74,19 @@
       "is_post": true
     },
     {
+      "name": "avatar.png",
+      "path": "avatar.png",
+      "kind": "file",
+      "extension": "png",
+      "size": 2343,
+      "modified": "2025-11-12T13:31:40.770128356Z",
+      "children_count": null,
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
+    },
+    {
       "name": "green_theme_demo.md",
       "path": "green_theme_demo.md",
       "kind": "file",
@@ -104,8 +117,8 @@
       "path": "index.md",
       "kind": "file",
       "extension": "md",
-      "size": 766,
-      "modified": "2025-11-24T12:58:04.950000253Z",
+      "size": 3345,
+      "modified": "2025-11-27T12:26:51.157065855Z",
       "children_count": null,
       "children": null,
       "title": "数据目录",

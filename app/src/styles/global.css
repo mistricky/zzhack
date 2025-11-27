@@ -24,6 +24,18 @@
   --color-post-hover: #ffffff;
 }
 
+@layer base {
+  h1 {
+    @apply text-2xl;
+    @apply text-white;
+  }
+
+  h2 {
+    @apply text-xl;
+    color: #dddddd;
+  }
+}
+
 @keyframes halo-drift {
   0% {
     transform: translate(0, 0) scale(1);
@@ -46,5 +58,19 @@
 @layer utilities {
   .halo-animate {
     animation: halo-drift 9s ease-in-out infinite;
+  }
+}
+
+@layer components {
+  .blur-fade-overlay {
+    @apply absolute inset-0 bg-black/50;
+    backdrop-filter: blur(12px);
+    mask-image: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.6) 65%,
+      rgba(0, 0, 0, 0.8) 85%,
+      rgba(0, 0, 0, 0) 100%
+    );
   }
 }
