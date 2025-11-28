@@ -60,7 +60,7 @@ pub fn terminal_window(props: &TerminalWindowProps) -> Html {
     };
 
     html! {
-            <div class="min-h-screen bg-page text-text flex items-center justify-center p-6">
+            <div class="min-h-screen overflow-hidden bg-page text-text flex items-center justify-center p-6">
             <button
                 type="button"
                 class="fixed top-6 right-6 h-10 w-10 flex items-center justify-center rounded-full text-border hover:bg-hover transition-colors"

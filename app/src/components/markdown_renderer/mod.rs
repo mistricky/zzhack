@@ -1,13 +1,13 @@
-mod header;
 mod avatar;
-mod ordered_list;
-mod unordered_list;
 mod blockquote;
 mod code_block;
+mod header;
 mod inline_code;
 mod link;
 mod math_block;
 mod math_inline;
+mod ordered_list;
+mod unordered_list;
 
 pub use avatar::Avatar;
 pub use blockquote::Blockquote;

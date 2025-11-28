@@ -36,8 +36,8 @@ fn render_line(idx: usize, line: &TermLine) -> Html {
     };
 
     html! {
-        <div class="leading-relaxed flex gap-2" key={idx.to_string()}>
-            <span class={classes!(text_class, "break-words", "whitespace-break-spaces")}>{ content }</span>
+        <div class="leading-relaxed flex gap-2 w-full" key={idx.to_string()}>
+            <span class={classes!(text_class, "break-words", "whitespace-break-spaces", "w-full")}>{ content }</span>
         </div>
     }
 }
