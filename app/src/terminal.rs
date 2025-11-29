@@ -5,7 +5,6 @@ use crate::config_service::ConfigService;
 use crate::terminal_state::{TerminalAction, TerminalState};
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
-use shell_parser::integration::ExecutableCommand;
 use shell_parser::{with_cli, ShellParseError};
 use std::cell::RefCell;
 use std::rc::Rc;

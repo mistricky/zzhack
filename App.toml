@@ -6,7 +6,7 @@ prompt_placeholder = "Type a command and press Enter ⏎"
 prompt_symbol = "❯"
 routes = [
   { path = "/", command = 'clear && ls -p'},
-  { path = "/posts/{file_path}", command = 'clear && render {file_path}'},
+  { path = "/posts/{*file_path}", command = 'clear && render {*file_path}'},
   { path = "*", command = 'clear && echo "Not found!"' }
 ]
 

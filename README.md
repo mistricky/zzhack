@@ -110,6 +110,17 @@ generate-css.sh         # TailwindCSS generation script
 - **Build System**: Trunk for WASM bundling with TailwindCSS integration
 - **State Management**: Yew hooks (use_state, use_effect) for component state
 
+## Routing
+
+Routes are defined in `App.toml` and executed via the terminal command runner:
+
+- Static match: `/` runs its command exactly.
+- Named segment: `/posts/{name}/foo` binds `{name}` to the segment between `posts` and `foo` (e.g., `/posts/bar/foo` sets `name = "bar"`).
+- Wildcard tail: `/posts/{*file_path}` captures everything after `/posts/` (e.g., `/posts/a/b/c` sets `file_path = "/a/b/c"`, and visiting `/posts/` sets `file_path = "/"`).
+- Fallback: `*` matches anything not caught earlier.
+
+Captured values can be interpolated into commands using `{name}` or `{*name}`.
+
 ## Adding New Commands
 
 To add a new command:

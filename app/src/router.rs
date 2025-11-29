@@ -62,27 +62,32 @@ fn match_route(path: &str, route: &RouteSection) -> Option<String> {
     let mut params = HashMap::new();
     let mut path_idx = 0usize;
 
-    for (idx, part) in pattern_segments.iter().enumerate() {
-        let is_last = idx == pattern_segments.len() - 1;
-        if let Some(name) = placeholder(part) {
-            if is_last {
+    for part in pattern_segments.iter() {
+        match placeholder_kind(part) {
+            Some(Placeholder::Wildcard(name)) => {
                 let remaining = &path_segments[path_idx..];
-                params.insert(name.to_string(), remaining.join("/"));
+                let joined = if remaining.is_empty() {
+                    "/".to_string()
+                } else {
+                    format!("/{}", remaining.join("/"))
+                };
+                params.insert(name.to_string(), joined);
                 path_idx = path_segments.len();
                 break;
             }
-
-            let value = path_segments.get(path_idx)?;
-            params.insert(name.to_string(), (*value).to_string());
-            path_idx += 1;
-            continue;
+            Some(Placeholder::Single(name)) => {
+                let value = path_segments.get(path_idx)?;
+                params.insert(name.to_string(), (*value).to_string());
+                path_idx += 1;
+            }
+            None => {
+                let value = path_segments.get(path_idx)?;
+                if part != value {
+                    return None;
+                }
+                path_idx += 1;
+            }
         }
-
-        let value = path_segments.get(path_idx)?;
-        if part != value {
-            return None;
-        }
-        path_idx += 1;
     }
 
     if path_idx != path_segments.len() {
@@ -96,15 +101,30 @@ fn apply_params(template: &str, params: &HashMap<String, String>) -> String {
     let mut resolved = template.to_string();
     for (key, value) in params {
         resolved = resolved.replace(&format!("{{{key}}}"), value);
+        resolved = resolved.replace(&format!("{{*{key}}}"), value);
     }
     resolved
 }
 
-fn placeholder(segment: &str) -> Option<&str> {
+enum Placeholder<'a> {
+    Single(&'a str),
+    Wildcard(&'a str),
+}
+
+fn placeholder_kind(segment: &str) -> Option<Placeholder<'_>> {
+    if let Some(name) = segment
+        .strip_prefix("{*")
+        .and_then(|s| s.strip_suffix('}'))
+        .filter(|s| !s.is_empty())
+    {
+        return Some(Placeholder::Wildcard(name));
+    }
+
     segment
         .strip_prefix('{')
         .and_then(|s| s.strip_suffix('}'))
         .filter(|s| !s.is_empty())
+        .map(Placeholder::Single)
 }
 
 fn normalize_path(path: &str) -> String {
