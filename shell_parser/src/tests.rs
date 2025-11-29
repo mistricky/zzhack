@@ -118,3 +118,19 @@ fn preserves_pipe_separator() {
     assert_eq!(parsed[1].separator, Some(Separator::Semicolon));
     assert_eq!(parsed[2].separator, None);
 }
+
+#[test]
+fn parses_and_separator() {
+    let parser = ShellParser::new();
+    let parsed = parser
+        .parse_with_separators("first&&second && third")
+        .unwrap();
+
+    assert_eq!(parsed.len(), 3);
+    assert_eq!(parsed[0].invocation.name, "first");
+    assert_eq!(parsed[1].invocation.name, "second");
+    assert_eq!(parsed[2].invocation.name, "third");
+    assert_eq!(parsed[0].separator, Some(Separator::And));
+    assert_eq!(parsed[1].separator, Some(Separator::And));
+    assert_eq!(parsed[2].separator, None);
+}

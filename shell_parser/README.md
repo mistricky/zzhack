@@ -3,7 +3,7 @@
 Pure shell-like parser that works in any environment without system API dependencies. It tokenizes simple shell syntax, validates commands against user-provided specs, and lets callers wire their own command implementations or pipeline handling.
 
 ## Features
-- Tokenizes commands with spaces, quotes (`'`/`"`), escapes (`\`), comments (`#`), separators (`;`, newline, `|`).
+- Tokenizes commands with spaces, quotes (`'`/`"`), escapes (`\`), comments (`#`), separators (`;`, newline, `|`, `&&`).
 - Optional command validation via `CommandSpec` (min/max args, unknown-command errors).
 - Access to parsed separators through `parse_with_separators` to build pipelines.
 - Zero system calls in the library; you provide execution logic.
@@ -61,7 +61,7 @@ Run the bundled examples to see end-to-end usage:
 
 ## API highlights
 - `ShellParser::parse(&str) -> Vec<CommandInvocation>`: basic parsing into commands/args.
-- `ShellParser::parse_with_separators(&str) -> Vec<ParsedCommand>`: includes trailing separators (`Separator::Pipe`, `Separator::Semicolon`, `Separator::Newline`).
+- `ShellParser::parse_with_separators(&str) -> Vec<ParsedCommand>`: includes trailing separators (`Separator::Pipe`, `Separator::Semicolon`, `Separator::And`, `Separator::Newline`).
 - `CommandSpec`: configure min/max args for validation.
 - `ShellParseError`: detailed errors for unknown commands, arity issues, and malformed input.
 

@@ -23,8 +23,7 @@ fn main() {
 
     // Execute a script through shell_parser and dispatch to the derived CLIs.
     let script = r#"
-        echo --name Micro --count 2
-        add --lhs 2 --rhs 3
+        echo --name Micro --count 2 && add --lhs 2 --rhs 3 && echo --name Done --count 1
         echo --help
         add -h
     "#;

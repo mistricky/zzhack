@@ -38,7 +38,7 @@ impl ShellParser {
     /// Parse a script into a list of invocations.
     ///
     /// The parser supports:
-    /// - Command separators: newline, `;`, or `|`.
+    /// - Command separators: newline, `;`, `|`, or `&&`.
     /// - Comments starting with `#` until the end of the line.
     /// - Quoted arguments with `'` or `"`.
     /// - Escaping with `\` to include special characters.

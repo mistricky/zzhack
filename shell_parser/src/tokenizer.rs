@@ -63,6 +63,18 @@ pub(crate) fn tokenize(input: &str) -> Result<Vec<CommandTokens>, ShellParseErro
                         iter.next();
                     }
                 }
+                '&' => {
+                    if let Some((_, '&')) = iter.peek() {
+                        iter.next(); // consume the second '&'
+                        push_token(&mut current_command, &mut current_token, &mut token_start);
+                        push_command(&mut commands, &mut current_command, Some(Separator::And));
+                    } else {
+                        if token_start.is_none() {
+                            token_start = Some(idx);
+                        }
+                        current_token.push(ch);
+                    }
+                }
                 ';' | '\n' | '|' => {
                     push_token(&mut current_command, &mut current_token, &mut token_start);
                     let separator = match ch {

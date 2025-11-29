@@ -3,5 +3,6 @@
 pub enum Separator {
     Newline,
     Semicolon,
+    And,
     Pipe,
 }
