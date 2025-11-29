@@ -6,6 +6,7 @@ mod du;
 mod echo;
 mod email;
 mod fetch;
+mod history;
 mod ls;
 mod pwd;
 mod render;
@@ -29,6 +30,7 @@ pub use du::DuCommand;
 pub use echo::EchoCommand;
 pub use email::EmailCommand;
 pub use fetch::FetchCommand;
+pub use history::HistoryCommand;
 pub use ls::LsCommand;
 pub use pwd::PwdCommand;
 pub use render::RenderCommand;
@@ -74,5 +76,6 @@ pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
         Box::new(EmailCommand::default()),
         Box::new(WhoAmICommand::default()),
         Box::new(ThemeCommand::default()),
+        Box::new(HistoryCommand::default()),
     ]
 }

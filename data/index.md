@@ -150,13 +150,13 @@ fn main() {
 
 ## 9. Images
 
-![Alt text](https://via.placeholder.com/150)
+![Alt text](/data/COVER.png)
 
 Reference image:
 
 ![Placeholder][imgref]
 
-[imgref]: https://via.placeholder.com/200
+[imgref]: /data/img.png 
 
 ---
 
