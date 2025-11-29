@@ -4,6 +4,7 @@ use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind, VfsNode};
 use micro_cli::Parser;
 use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use std::cmp::Ordering;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
 #[derive(Parser, Debug, Default)]
@@ -112,7 +113,20 @@ impl LsCommand {
             (None, None) => a.metadata.name.cmp(&b.metadata.name),
         });
 
-        ctx.terminal.push_component(render_posts(&posts));
+        let on_post_click = {
+            let terminal = ctx.terminal.clone();
+            Callback::from(move |metadata: VfsNode| {
+                let terminal = terminal.clone();
+                let path = format!("/posts/{}", metadata.path.clone());
+
+                spawn_local(async move {
+                    terminal.execute_command(&format!("navigate {path}")).await;
+                });
+            })
+        };
+
+        ctx.terminal
+            .push_component(render_posts(&posts, on_post_click));
         Ok(())
     }
 }
@@ -147,12 +161,12 @@ impl PostEntry {
     }
 }
 
-fn render_posts(posts: &[PostEntry]) -> Html {
+fn render_posts(posts: &[PostEntry], on_click: Callback<VfsNode>) -> Html {
     html! {
         <div class="py-6 space-y-3">
             { for posts.iter().map(|post| {
                 html! {
-                    <PostItem metadata={post.metadata.clone()}  />
+                    <PostItem metadata={post.metadata.clone()} on_click={on_click.clone()} />
                 }
             }) }
         </div>

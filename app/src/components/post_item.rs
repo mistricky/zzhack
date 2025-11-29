@@ -6,6 +6,7 @@ use yew::prelude::*;
 pub struct PostItemProps {
     /// Metadata for the post. For post directories, pass the `index.md` metadata.
     pub metadata: VfsNode,
+    pub on_click: Callback<VfsNode>,
 }
 
 #[function_component(PostItem)]
@@ -38,8 +39,19 @@ pub fn post_item(props: &PostItemProps) -> Html {
         _ => String::new(),
     };
 
+    let on_click = {
+        let on_click = props.on_click.clone();
+        let metadata = props.metadata.clone();
+        Callback::from(move |_| {
+            on_click.emit(metadata.clone());
+        })
+    };
+
     html! {
-        <div class="flex flex-col gap-1 text-post hover:text-post-hover hover:cursor-pointer transition-colors duration-150 text-base">
+        <div
+            class="flex flex-col gap-1 text-post hover:text-post-hover hover:cursor-pointer transition-colors duration-150 text-base"
+            onclick={on_click}
+        >
             <div class="flex items-center gap-3">
                 <span>{ title }</span>
                 if !meta_text.is_empty() {
