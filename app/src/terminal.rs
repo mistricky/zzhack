@@ -6,9 +6,8 @@ use crate::terminal_state::{TerminalAction, TerminalState};
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
 use shell_parser::integration::ExecutableCommand;
-use shell_parser::{ShellParseError, ShellParser};
+use shell_parser::{with_cli, ShellParseError};
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 use yew::UseReducerHandle;
 
@@ -18,7 +17,7 @@ pub struct Terminal {
     vfs: Rc<VfsNode>,
     cache: Option<Rc<CacheService>>,
     history: Rc<RefCell<CommandHistory>>,
-    handlers: Rc<Vec<Box<dyn ExecutableCommand<CommandContext>>>>,
+    cwd: Rc<RefCell<Vec<String>>>,
 }
 
 impl Terminal {
@@ -38,7 +37,7 @@ impl Terminal {
             vfs: Rc::new(load_vfs()),
             cache,
             history,
-            handlers: Rc::new(command_handlers()),
+            cwd: Rc::new(RefCell::new(Vec::new())),
         }
     }
 
@@ -87,10 +86,11 @@ impl Terminal {
     }
 
     pub fn cwd(&self) -> Vec<String> {
-        (*self.state).cwd.clone()
+        self.cwd.borrow().clone()
     }
 
     pub fn set_cwd(&self, cwd: Vec<String>) {
+        *self.cwd.borrow_mut() = cwd.clone();
         self.state.dispatch(TerminalAction::SetCwd(cwd));
     }
 
@@ -128,49 +128,21 @@ impl Terminal {
             config,
         };
 
-        let mut specs = Vec::with_capacity(self.handlers.len());
-        let mut map: HashMap<String, &Box<dyn ExecutableCommand<CommandContext>>> = HashMap::new();
-        for handler in self.handlers.iter() {
-            let spec = handler.spec();
-            map.insert(spec.name.clone(), handler);
-            specs.push(spec);
-        }
+        let runner = with_cli(ctx.clone(), command_handlers());
 
-        let parser = ShellParser::with_commands(specs);
-
-        let parsed = match parser.parse(input) {
-            Ok(commands) => commands.into_iter().next(),
-            Err(err) => {
-                let message = match err {
+        if let Err(err) = runner.run_script(input) {
+            let message = match err {
+                shell_parser::integration::ShellCliError::Parse(parse_err) => match parse_err {
                     ShellParseError::UnknownCommand { name, .. } => {
                         format!("Unknown command {name}")
                     }
                     other => format!("parse error: {other}"),
-                };
-                ctx.terminal.push_error(message);
-                return;
-            }
-        };
-
-        let Some(command) = parsed else {
-            ctx.terminal.push_error("empty command");
-            return;
-        };
-
-        let handler = match map.get(command.name.as_str()) {
-            Some(h) => h,
-            None => {
-                ctx.terminal.push_error(format!(
-                    "unknown command: {} (TODO: implement)",
-                    command.name
-                ));
-                return;
-            }
-        };
-
-        if let Err(err) = handler.run(&command.args, &ctx) {
-            ctx.terminal
-                .push_error(format!("{}: {}", command.name, err));
+                },
+                shell_parser::integration::ShellCliError::Execution { command, message } => {
+                    format!("{command}: {message}")
+                }
+            };
+            self.push_error(message);
         }
     }
 }

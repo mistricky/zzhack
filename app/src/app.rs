@@ -1,5 +1,6 @@
 use crate::components::{HistoryDirection, TerminalWindow};
 use crate::config_service::ConfigService;
+use crate::router::{start_router, RouterHandle};
 use crate::terminal::Terminal;
 use crate::terminal_state::TerminalState;
 use std::cell::RefCell;
@@ -20,15 +21,24 @@ pub fn app() -> Html {
     let input = use_state(String::new);
     let terminal = use_mut_ref(|| Option::<Terminal>::None);
     let terminal_ready = use_state(|| false);
+    let router_handle = use_mut_ref(|| Option::<RouterHandle>::None);
 
     {
         let terminal = terminal.clone();
         let terminal_ready = terminal_ready.clone();
         let terminal_state = terminal_state.clone();
+        let router_handle = router_handle.clone();
         use_effect_with((), move |_| {
             spawn_local(async move {
                 let built = Terminal::new(terminal_state).await;
-                *terminal.borrow_mut() = Some(built);
+                *terminal.borrow_mut() = Some(built.clone());
+
+                if router_handle.borrow().is_none() {
+                    if let Some(handle) = start_router(built.clone()) {
+                        *router_handle.borrow_mut() = Some(handle);
+                    }
+                }
+
                 terminal_ready.set(true);
             });
             || ()

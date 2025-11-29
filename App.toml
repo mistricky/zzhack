@@ -4,6 +4,11 @@ terminal_window = false
 mac_title_bar = true
 prompt_placeholder = "Type a command and press Enter ⏎"
 prompt_symbol = "❯"
+routes = [
+  { path = "/", command = 'clear && ls -p'},
+  { path = "/posts/{file_path}", command = 'clear && render {file_path}'},
+  { path = "*", command = 'clear && echo "Not found!"' }
+]
 
 [author]
 name = "Mist"

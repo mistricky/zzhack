@@ -10,6 +10,7 @@ pub struct AppSection {
     pub mac_title_bar: bool,
     pub prompt_placeholder: String,
     pub prompt_symbol: String,
+    pub routes: Vec<RouteSection>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -23,6 +24,12 @@ pub struct AuthorSection {
 pub struct AppConfig {
     pub app: AppSection,
     pub author: AuthorSection,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RouteSection {
+    pub path: String,
+    pub command: String,
 }
 
 pub struct ConfigService;

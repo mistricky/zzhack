@@ -8,6 +8,7 @@ mod email;
 mod fetch;
 mod history;
 mod ls;
+mod navigate;
 mod pwd;
 mod render;
 mod stat;
@@ -32,6 +33,7 @@ pub use email::EmailCommand;
 pub use fetch::FetchCommand;
 pub use history::HistoryCommand;
 pub use ls::LsCommand;
+pub use navigate::NavigateCommand;
 pub use pwd::PwdCommand;
 pub use render::RenderCommand;
 pub use stat::StatCommand;
@@ -76,6 +78,7 @@ pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
         Box::new(EmailCommand::default()),
         Box::new(WhoAmICommand::default()),
         Box::new(ThemeCommand::default()),
+        Box::new(NavigateCommand::default()),
         Box::new(HistoryCommand::default()),
     ]
 }
