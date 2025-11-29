@@ -2,7 +2,12 @@
 target = "index.html"
 dist = "dist"
 
-# [[hooks]]
-# stage = "pre_build" 
-# command = "echo '123'"
-# command_arguments = []
+[watch]
+# Ignore auto generated files
+ignore = [ "src/vfs.json" ]
+watch = [ "../data" ]
+
+[[hooks]]
+stage = "pre_build" 
+command = "cargo"
+command_arguments = ['xtask', "metadata-generate"]

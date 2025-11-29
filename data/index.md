@@ -1,6 +1,6 @@
 --
-title: 数据目录
-description: 包含所有演示文件和文档的根目录
+title: Data datalog
+description: Root directory includes all demo files and images 
 tags: root, demo, documentation
 --
 

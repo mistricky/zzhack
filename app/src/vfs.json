@@ -4,7 +4,7 @@
   "kind": "directory",
   "extension": null,
   "size": null,
-  "modified": "2025-11-27T12:26:51.166042061Z",
+  "modified": "2025-11-29T15:29:30.885867716Z",
   "children_count": 10,
   "children": [
     {
@@ -117,12 +117,12 @@
       "path": "index.md",
       "kind": "file",
       "extension": "md",
-      "size": 3345,
-      "modified": "2025-11-27T12:26:51.157065855Z",
+      "size": 3319,
+      "modified": "2025-11-29T15:29:30.885217555Z",
       "children_count": null,
       "children": null,
-      "title": "数据目录",
-      "description": "包含所有演示文件和文档的根目录",
+      "title": "Data datalog",
+      "description": "Root directory includes all demo files and images",
       "is_post": false
     },
     {
