@@ -4,7 +4,7 @@
   "kind": "directory",
   "extension": null,
   "size": null,
-  "modified": "2025-11-29T15:29:30.885867716Z",
+  "modified": "2025-12-03T12:44:57.974001491Z",
   "children_count": 10,
   "children": [
     {
@@ -117,8 +117,8 @@
       "path": "index.md",
       "kind": "file",
       "extension": "md",
-      "size": 3319,
-      "modified": "2025-11-29T15:29:30.885217555Z",
+      "size": 3247,
+      "modified": "2025-12-03T12:44:57.964475566Z",
       "children_count": null,
       "children": null,
       "title": "Data datalog",

@@ -7,13 +7,13 @@ tags: root, demo, documentation
 Here is a **complete English Markdown test document** that covers **all commonly used Markdown syntax**, including GitHub-flavored Markdown (GFM).
 You can copy it directly and use it for renderer testing.
 
----
+
 
 # Markdown Test Document
 
 *A comprehensive test of all Markdown syntax (CommonMark + GFM).*
 
----
+
 
 ## 1. Headings
 
@@ -29,7 +29,7 @@ You can copy it directly and use it for renderer testing.
 
 ###### Heading 6
 
----
+
 
 ## 2. Paragraphs & Line Breaks
 
@@ -38,7 +38,7 @@ Here is the second line after a hard break.
 
 This is another paragraph separated by a blank line.
 
----
+
 
 ## 3. Emphasis
 
@@ -47,7 +47,7 @@ This is another paragraph separated by a blank line.
 ***Bold and italic***
 ~~Strikethrough~~ <ins>Underlined text (HTML)</ins>
 
----
+
 
 ## 4. Blockquotes
 
@@ -57,7 +57,7 @@ This is another paragraph separated by a blank line.
 > >
 > > Another level.
 
----
+
 
 ## 5. Lists
 
@@ -88,7 +88,7 @@ This is another paragraph separated by a blank line.
   2. Subitem
 * Item
 
----
+
 
 ## 6. Code
 
@@ -126,15 +126,15 @@ fn main() {
 }
 ```
 
----
+
 
 ## 7. Horizontal Rules
 
----
 
----
 
----
+
+
+
 
 ## 8. Links
 
@@ -146,7 +146,7 @@ fn main() {
 
 [https://example.com](https://example.com) ← auto-link
 
----
+
 
 ## 9. Images
 
@@ -158,12 +158,12 @@ Reference image:
 
 [imgref]: /data/img.png 
 
----
+
 
 ## 10. Tables (GFM)
 
 | Name  | Age | Role      |
-| ----- | --- | --------- |
+| -- | --- | --------- |
 | Alice | 24  | Developer |
 | Bob   | 31  | Designer  |
 | Eve   | 28  | Manager   |
@@ -171,11 +171,11 @@ Reference image:
 ### Alignment
 
 | Left | Center | Right |
-| :--- | :----: | ----: |
+| : | :----: | ----: |
 | A    |    B   |     C |
 | D    |    E   |     F |
 
----
+
 
 ## 11. Task Lists (GFM)
 
@@ -183,7 +183,7 @@ Reference image:
 * [ ] Add more tests
 * [ ] Fix rendering issues
 
----
+
 
 ## 12. Footnotes (GFM)
 
@@ -195,7 +195,7 @@ Another footnote reference.[^note]
 
 [^note]: This is another footnote.
 
----
+
 
 ## 13. Definition Lists (GFM extension)
 
@@ -206,7 +206,7 @@ Term 2
 : Definition of term 2
 : Another definition
 
----
+
 
 ## 14. Emoji (GFM)
 
@@ -214,7 +214,7 @@ Supported GitHub emojis:
 
 :smile: :tada: :rocket: :+1:
 
----
+
 
 ## 15. HTML inside Markdown
 
@@ -223,7 +223,7 @@ Supported GitHub emojis:
   Works inside Markdown.
 </div>
 
----
+
 
 ## 16. Code Fence Highlight Test
 
@@ -231,7 +231,7 @@ Supported GitHub emojis:
 No language → treated as plain text.
 ```
 
----
+
 
 ## 17. Escaping Characters
 
@@ -239,7 +239,7 @@ No language → treated as plain text.
 (Parentheses)
 _Underscores_
 
----
+
 
 ## 18. Math (If renderer supports KaTeX/MathJax)
 
@@ -251,7 +251,7 @@ $$
 \int_0^\infty e^{-x^2} , dx = \frac{\sqrt\pi}{2}
 $$
 
----
+
 
 # End of Document
 
