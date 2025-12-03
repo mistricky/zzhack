@@ -6,6 +6,7 @@ mod du;
 mod echo;
 mod email;
 mod fetch;
+mod help;
 mod history;
 mod ls;
 mod navigate;
@@ -17,7 +18,7 @@ mod whoami;
 
 use crate::cache_service::CacheService;
 use crate::config_service::AppConfig;
-use crate::terminal::Terminal;
+use crate::terminal::TerminalHandle;
 use crate::vfs_data::VfsNode;
 use micro_cli::{CliError, Parser};
 use shell_parser::integration::ExecutableCommand;
@@ -31,6 +32,7 @@ pub use du::DuCommand;
 pub use echo::EchoCommand;
 pub use email::EmailCommand;
 pub use fetch::FetchCommand;
+pub use help::HelpCommand;
 pub use history::HistoryCommand;
 pub use ls::LsCommand;
 pub use navigate::NavigateCommand;
@@ -44,7 +46,7 @@ pub use whoami::WhoAmICommand;
 pub struct CommandContext {
     pub vfs: Rc<VfsNode>,
     pub cache: Option<Rc<CacheService>>,
-    pub terminal: Terminal,
+    pub terminal: TerminalHandle,
     pub config: &'static AppConfig,
 }
 
@@ -80,5 +82,6 @@ pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
         Box::new(ThemeCommand::default()),
         Box::new(NavigateCommand::default()),
         Box::new(HistoryCommand::default()),
+        Box::new(HelpCommand::default()),
     ]
 }

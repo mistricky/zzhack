@@ -4,14 +4,16 @@ use std::fmt;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CommandSpec {
     pub name: String,
+    pub about: String,
     pub min_args: usize,
     pub max_args: Option<usize>,
 }
 
 impl CommandSpec {
     /// Create a new spec with a name and no argument constraints.
-    pub fn new(name: impl Into<String>) -> Self {
+    pub fn new(name: impl Into<String>, about: impl Into<String>) -> Self {
         Self {
+            about: about.into(),
             name: name.into(),
             min_args: 0,
             max_args: None,

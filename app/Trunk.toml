@@ -5,7 +5,7 @@ dist = "dist"
 [watch]
 # Ignore auto generated files
 ignore = [ "src/vfs.json" ]
-watch = [ "../data" ]
+watch = [ "../data", "src" ]
 
 [[hooks]]
 stage = "pre_build" 

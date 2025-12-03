@@ -106,7 +106,10 @@ fn integrates_with_shell_parser_invocations() {
         commands: [echo]
     };
 
-    let parser = shell_parser::ShellParser::with_commands([shell_parser::CommandSpec::new("echo")]);
+    let parser = shell_parser::ShellParser::with_commands([shell_parser::CommandSpec::new(
+        "echo",
+        "Echo text",
+    )]);
     let script = r#"echo hello world
 echo "pipe friendly""#;
     let invocations = parser.parse(script).unwrap();

@@ -111,9 +111,11 @@ impl ShellState {
 
 fn main() {
     let parser = ShellParser::with_commands([
-        CommandSpec::new("echo").with_min_args(1),
-        CommandSpec::new("cd").with_min_args(1).with_max_args(1),
-        CommandSpec::new("cat").with_min_args(1),
+        CommandSpec::new("echo", "Print text to stdout").with_min_args(1),
+        CommandSpec::new("cd", "Change the working directory")
+            .with_min_args(1)
+            .with_max_args(1),
+        CommandSpec::new("cat", "Print the contents of a file").with_min_args(1),
     ]);
 
     let script = r#"

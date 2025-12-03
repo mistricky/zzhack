@@ -15,9 +15,12 @@ pub enum ShellCliError {
 pub trait CommandInfo {
     /// Name used in the script (e.g., `echo`).
     fn command_name(&self) -> &'static str;
+
+    fn command_about(&self) -> &'static str;
+
     /// Specification for validation.
     fn command_spec(&self) -> CommandSpec {
-        CommandSpec::new(self.command_name())
+        CommandSpec::new(self.command_name(), self.command_about())
     }
 }
 
@@ -88,12 +91,14 @@ impl<C> CliRunner<C> {
 
     /// Render help text listing registered commands.
     pub fn help(&self) -> String {
-        let mut names: Vec<&str> = self.specs.iter().map(|spec| spec.name.as_str()).collect();
-        names.sort_unstable();
+        // let mut names: Vec<&str> = self.specs.iter().map(|spec| spec.name.as_str()).collect();
+        // names.sort_unstable();
         let mut out = String::from("Commands:\n");
-        for name in names {
-            out.push_str(&format!("  {}\n", name));
+
+        for spec in self.specs.iter() {
+            out.push_str(&format!("  {:<10}     {}\n", spec.name, spec.about));
         }
+
         out
     }
 

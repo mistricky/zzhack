@@ -5,18 +5,30 @@ use crate::config_service::ConfigService;
 use crate::terminal_state::{TerminalAction, TerminalState};
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
-use shell_parser::{with_cli, ShellParseError};
+use shell_parser::{with_cli, CliRunner, ShellParseError};
 use std::cell::RefCell;
-use std::rc::Rc;
+use std::ops::Deref;
+use std::rc::{Rc, Weak};
 use yew::UseReducerHandle;
 
-#[derive(Clone)]
-pub struct Terminal {
+struct TerminalCore {
     state: UseReducerHandle<TerminalState>,
     vfs: Rc<VfsNode>,
     cache: Option<Rc<CacheService>>,
     history: Rc<RefCell<CommandHistory>>,
     cwd: Rc<RefCell<Vec<String>>>,
+    runner: RefCell<Option<Weak<CliRunner<CommandContext>>>>,
+}
+
+#[derive(Clone)]
+pub struct TerminalHandle {
+    inner: Rc<TerminalCore>,
+}
+
+#[derive(Clone)]
+pub struct Terminal {
+    handle: TerminalHandle,
+    _runner: Rc<CliRunner<CommandContext>>,
 }
 
 impl Terminal {
@@ -28,20 +40,98 @@ impl Terminal {
                 None
             }
         };
-
+        let vfs = Rc::new(load_vfs());
         let history = Rc::new(RefCell::new(CommandHistory::new(cache.clone()).await));
+        let handle = TerminalHandle::new(state, vfs, cache, history);
+        let runner = Rc::new(with_cli(handle.command_context(), command_handlers()));
+        handle.set_runner(&runner);
 
         Self {
-            state,
-            vfs: Rc::new(load_vfs()),
-            cache,
-            history,
-            cwd: Rc::new(RefCell::new(Vec::new())),
+            handle,
+            _runner: runner,
         }
     }
 
+    pub async fn process_command(&self, trimmed: String) {
+        self.push_line(TermLine {
+            body: format!(
+                r#"<div class="text-sm mt-4 text-gray-600">{}</div>"#,
+                trimmed.clone()
+            ),
+            accent: false,
+            kind: OutputKind::Html,
+            node: None,
+        });
+
+        self.history().borrow_mut().push(trimmed.clone());
+
+        self.execute_command(&trimmed).await;
+    }
+}
+
+impl Deref for Terminal {
+    type Target = TerminalHandle;
+
+    fn deref(&self) -> &Self::Target {
+        &self.handle
+    }
+}
+
+impl TerminalHandle {
+    fn new(
+        state: UseReducerHandle<TerminalState>,
+        vfs: Rc<VfsNode>,
+        cache: Option<Rc<CacheService>>,
+        history: Rc<RefCell<CommandHistory>>,
+    ) -> Self {
+        Self {
+            inner: Rc::new(TerminalCore {
+                state,
+                vfs,
+                cache,
+                history,
+                cwd: Rc::new(RefCell::new(Vec::new())),
+                runner: RefCell::new(None),
+            }),
+        }
+    }
+
+    fn command_context(&self) -> CommandContext {
+        CommandContext {
+            vfs: self.inner.vfs.clone(),
+            cache: self.inner.cache.clone(),
+            terminal: self.clone(),
+            config: ConfigService::get(),
+        }
+    }
+
+    fn set_runner(&self, runner: &Rc<CliRunner<CommandContext>>) {
+        *self.inner.runner.borrow_mut() = Some(Rc::downgrade(runner));
+    }
+
+    fn runner(&self) -> Option<Rc<CliRunner<CommandContext>>> {
+        self.inner
+            .runner
+            .borrow()
+            .as_ref()
+            .and_then(|weak| weak.upgrade())
+    }
+
+    fn runner_else(
+        &self,
+    ) -> Result<Rc<CliRunner<CommandContext>>, shell_parser::integration::ShellCliError> {
+        let Some(runner) = self.runner() else {
+            return Err(shell_parser::integration::ShellCliError::Execution {
+                command: "None".to_string(),
+                message: "runner unavailable".into(),
+            });
+        };
+
+        Ok(runner)
+    }
+
     pub fn push_line(&self, line: TermLine) {
-        self.state.dispatch(TerminalAction::PushLine(line));
+        self.inner.state.dispatch(TerminalAction::PushLine(line));
     }
 
     pub fn push_text(&self, body: impl Into<String>) {
@@ -81,67 +171,56 @@ impl Terminal {
     }
 
     pub fn clear(&self) {
-        self.state.dispatch(TerminalAction::ClearLines);
+        self.inner.state.dispatch(TerminalAction::ClearLines);
     }
 
     pub fn cwd(&self) -> Vec<String> {
-        self.cwd.borrow().clone()
+        self.inner.cwd.borrow().clone()
     }
 
     pub fn set_cwd(&self, cwd: Vec<String>) {
-        *self.cwd.borrow_mut() = cwd.clone();
-        self.state.dispatch(TerminalAction::SetCwd(cwd));
+        *self.inner.cwd.borrow_mut() = cwd.clone();
+        self.inner.state.dispatch(TerminalAction::SetCwd(cwd));
     }
 
     pub fn cache(&self) -> Option<Rc<CacheService>> {
-        self.cache.clone()
+        self.inner.cache.clone()
     }
 
     pub fn history(&self) -> Rc<RefCell<CommandHistory>> {
-        self.history.clone()
+        self.inner.history.clone()
     }
 
-    pub async fn process_command(&self, trimmed: String) {
-        self.push_line(TermLine {
-            body: format!(
-                r#"<div class="text-sm mt-4 text-gray-600">{}</div>"#,
-                trimmed.clone()
-            ),
-            accent: false,
-            kind: OutputKind::Html,
-            node: None,
-        });
-
-        self.history.borrow_mut().push(trimmed.clone());
-
-        self.execute_command(&trimmed).await;
+    pub fn help(&self) -> Result<String, shell_parser::integration::ShellCliError> {
+        Ok(self.runner_else()?.help())
     }
 
     pub async fn execute_command(&self, input: &str) {
-        let cache = self.cache.clone();
-        let config = ConfigService::get();
-        let ctx = CommandContext {
-            vfs: self.vfs.clone(),
-            cache,
-            terminal: self.clone(),
-            config,
-        };
+        if let Err(err) = self.run_script(input) {
+            self.push_error(format_cli_error(err));
+        }
+    }
 
-        let runner = with_cli(ctx.clone(), command_handlers());
+    fn run_script(&self, input: &str) -> Result<(), shell_parser::integration::ShellCliError> {
+        self.runner_else()?.run_script(input)
+    }
 
-        if let Err(err) = runner.run_script(input) {
-            let message = match err {
-                shell_parser::integration::ShellCliError::Parse(parse_err) => match parse_err {
-                    ShellParseError::UnknownCommand { name, .. } => {
-                        format!("Unknown command {name}")
-                    }
-                    other => format!("parse error: {other}"),
-                },
-                shell_parser::integration::ShellCliError::Execution { command, message } => {
-                    format!("{command}: {message}")
-                }
-            };
-            self.push_error(message);
+    pub fn to_terminal(&self) -> Option<Terminal> {
+        self.runner().map(|runner| Terminal {
+            handle: self.clone(),
+            _runner: runner,
+        })
+    }
+}
+
+fn format_cli_error(err: shell_parser::integration::ShellCliError) -> String {
+    match err {
+        shell_parser::integration::ShellCliError::Parse(parse_err) => match parse_err {
+            ShellParseError::UnknownCommand { name, .. } => format!("Unknown command {name}"),
+            other => format!("parse error: {other}"),
+        },
+        shell_parser::integration::ShellCliError::Execution { command, message } => {
+            format!("{command}: {message}")
         }
     }
 }

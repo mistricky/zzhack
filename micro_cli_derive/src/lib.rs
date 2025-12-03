@@ -439,6 +439,10 @@ fn expand_struct(
             fn command_name(&self) -> &'static str {
                 #name_lit
             }
+
+            fn command_about(&self) -> &'static str {
+                #about_lit
+            }
         }
     };
 
@@ -562,6 +566,10 @@ fn expand_enum(
         impl shell_parser::integration::CommandInfo for #ident {
             fn command_name(&self) -> &'static str {
                 #name_lit
+            }
+
+            fn command_about(&self) -> &'static str {
+                #about_lit
             }
         }
     };

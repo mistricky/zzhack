@@ -22,8 +22,8 @@ use shell_parser::{CommandSpec, ShellParser};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Register commands for validation (optional)
     let parser = ShellParser::with_commands([
-        CommandSpec::new("echo").with_min_args(1),
-        CommandSpec::new("upper").with_min_args(0),
+        CommandSpec::new("echo", "Print text").with_min_args(1),
+        CommandSpec::new("upper", "Uppercase the previous output").with_min_args(0),
     ]);
 
     let script = r#"echo "hello world" | upper"#;

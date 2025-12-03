@@ -28,9 +28,9 @@ fn main() {
         add -h
     "#;
 
-    if let Err(err) = runner.run_script(script) {
-        eprintln!("error: {err}");
-    }
+    // if let Err(err) = runner.run_script(script) {
+    //     eprintln!("error: {err}");
+    // }
 
-    runner.run_line("echo --help").unwrap();
+    println!("{}", runner.help());
 }

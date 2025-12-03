@@ -141,11 +141,13 @@ fn run_pipeline(pipeline: &[CommandInvocation], state: &mut ShellState) {
 
 fn main() -> io::Result<()> {
     let parser = ShellParser::with_commands([
-        CommandSpec::new("echo").with_min_args(0),
-        CommandSpec::new("upper").with_min_args(0),
-        CommandSpec::new("append").with_min_args(0),
-        CommandSpec::new("save").with_min_args(1).with_max_args(1),
-        CommandSpec::new("cat").with_min_args(1),
+        CommandSpec::new("echo", "Echo input text").with_min_args(0),
+        CommandSpec::new("upper", "Uppercase text").with_min_args(0),
+        CommandSpec::new("append", "Append suffix to prior output").with_min_args(0),
+        CommandSpec::new("save", "Save pipeline output to a file")
+            .with_min_args(1)
+            .with_max_args(1),
+        CommandSpec::new("cat", "Print file contents").with_min_args(1),
     ]);
 
     let script = r#"
