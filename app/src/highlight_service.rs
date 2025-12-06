@@ -1,59 +1,64 @@
-use once_cell::sync::Lazy;
-use syntect::{
-    easy::HighlightLines,
-    highlighting::{Style, Theme, ThemeSet},
-    html::{append_highlighted_html_for_styled_line, IncludeBackground},
-    parsing::SyntaxSet,
-    util::LinesWithEndings,
-};
+use gloo_worker::{oneshot::OneshotBridge, Spawnable};
+use std::cell::RefCell;
+
+use worker::{HighlightRequest, HighlightWorker};
 
 pub struct HighlightService;
 
-static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(|| SyntaxSet::load_defaults_newlines());
-static THEME: Lazy<Theme> = Lazy::new(|| {
-    ThemeSet::load_defaults()
-        .themes
-        .get("base16-ocean.dark")
-        .cloned()
-        .unwrap_or_else(|| ThemeSet::load_defaults().themes["base16-eighties.dark"].clone())
-});
+const WORKER_ENTRYPOINT: &str = "/highlight_worker.js";
+
+thread_local! {
+    static HIGHLIGHT_WORKER: RefCell<Option<OneshotBridge<HighlightWorker>>> = RefCell::new(None);
+}
 
 impl HighlightService {
-    pub fn highlight_html(code: &str, language: Option<&str>) -> String {
-        Self::highlight_lines_html(code, language).join("\n")
+    pub async fn highlight_html(code: &str, language: Option<&str>) -> String {
+        Self::highlight_lines_html(code, language).await.join("\n")
     }
 
-    pub fn highlight_lines_html(code: &str, language: Option<&str>) -> Vec<String> {
-        let syntax = language
-            .and_then(|lang| SYNTAX_SET.find_syntax_by_token(lang))
-            .unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text());
+    pub async fn highlight_lines_html(code: &str, language: Option<&str>) -> Vec<String> {
+        let request = HighlightRequest {
+            code: code.to_owned(),
+            language: language.map(str::to_owned),
+        };
 
-        let mut highlighter = HighlightLines::new(syntax, &THEME);
-        let mut output = Vec::new();
+        run_worker(request).await
+    }
+}
 
-        for line in LinesWithEndings::from(code) {
-            let mut highlighted_line = String::new();
-            if let Ok(ranges) = highlighter.highlight_line(line, &SYNTAX_SET) {
-                let _ = append_highlighted_html_for_styled_line(
-                    &ranges,
-                    IncludeBackground::No,
-                    &mut highlighted_line,
-                );
-            } else {
-                let _ = append_highlighted_html_for_styled_line(
-                    &[(Style::default(), line)],
-                    IncludeBackground::No,
-                    &mut highlighted_line,
-                );
-            }
-
-            let highlighted_line = highlighted_line
-                .strip_suffix('\n')
-                .unwrap_or(&highlighted_line)
-                .to_owned();
-            output.push(highlighted_line);
+async fn run_worker(request: HighlightRequest) -> Vec<String> {
+    let mut bridge = HIGHLIGHT_WORKER.with(|cell| {
+        let mut worker = cell.borrow_mut();
+        if worker.is_none() {
+            let base = HighlightWorker::spawner().spawn(WORKER_ENTRYPOINT);
+            *worker = Some(base);
         }
 
-        output
+        worker.as_ref().expect("worker initialized above").fork()
+    });
+
+    bridge.run(request).await
+}
+
+pub mod worker {
+    use gloo_worker::{oneshot::oneshot, Registrable};
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct HighlightRequest {
+        pub code: String,
+        pub language: Option<String>,
+    }
+
+    #[oneshot(HighlightWorker)]
+    pub(crate) async fn highlight_worker(request: HighlightRequest) -> Vec<String> {
+        crate::highlight_engine::HighlightEngine::highlight_lines(
+            &request.code,
+            request.language.as_deref(),
+        )
+    }
+
+    pub fn register() {
+        HighlightWorker::registrar().register();
     }
 }

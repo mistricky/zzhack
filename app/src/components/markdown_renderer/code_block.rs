@@ -1,3 +1,6 @@
+use std::{cell::Cell, rc::Rc};
+
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
 use crate::highlight_service::HighlightService;
@@ -11,22 +14,72 @@ pub struct CodeBlockProps {
 
 #[function_component(CodeBlock)]
 pub fn code_block(props: &CodeBlockProps) -> Html {
-    let lang = props.language.as_deref();
-    let highlighted = HighlightService::highlight_lines_html(&props.code, lang);
-    let lang_class = lang.map(|l| format!("language-{}", l));
+    let highlighted_lines = use_state(|| None::<Vec<String>>);
+    let lang_class = props.language.as_deref().map(|l| format!("language-{}", l));
+
+    {
+        let highlighted_lines = highlighted_lines.clone();
+        use_effect_with((props.code.clone(), props.language.clone()), move |deps| {
+            let (code, language) = deps;
+            let highlighted_lines = highlighted_lines.clone();
+            let code_owned = code.to_string();
+            let language_owned = language.clone().map(|value| value.to_string());
+            let is_cancelled = Rc::new(Cell::new(false));
+            let cancel_flag = is_cancelled.clone();
+
+            highlighted_lines.set(None);
+
+            spawn_local(async move {
+                let language_ref = language_owned.as_deref();
+                let lines = HighlightService::highlight_lines_html(&code_owned, language_ref).await;
+
+                if !cancel_flag.get() {
+                    highlighted_lines.set(Some(lines));
+                }
+            });
+
+            move || {
+                is_cancelled.set(true);
+            }
+        });
+    }
+
+    let render_line = |index: usize, content: Html| {
+        html! {
+            <span class="grid grid-cols-[auto,1fr] gap-4">
+                <span class="w-12 select-none text-right pr-2 text-slate-500 tabular-nums" aria-hidden="true">{ index + 1 }</span>
+                <span class="block whitespace-pre">
+                    { content }
+                </span>
+            </span>
+        }
+    };
 
     html! {
         <pre class="my-4 overflow-x-auto rounded-lg bg-black/60 text-sm text-slate-100">
             <code class={classes!(lang_class, "block", "font-mono", "leading-6")}>
                 {
-                    for highlighted.iter().enumerate().map(|(index, line)| html! {
-                        <span class="grid grid-cols-[auto,1fr] gap-4">
-                            <span class="w-12 select-none text-right pr-2 text-slate-500 tabular-nums" aria-hidden="true">{ index + 1 }</span>
-                            <span class="block whitespace-pre">
-                                { Html::from_html_unchecked(AttrValue::from(line.clone())) }
-                            </span>
-                        </span>
-                    })
+                    if let Some(lines) = &*highlighted_lines {
+                        html! {
+                            <>
+                            {
+                                for lines.iter().enumerate().map(|(index, line)| {
+                                    render_line(index, Html::from_html_unchecked(AttrValue::from(line.clone())))
+                                })
+                            }
+                            </>
+                        }
+                    } else {
+                        html! {
+                            <>
+                            {
+                                for props.code.as_ref().split_inclusive('\n').enumerate().map(|(index, line)| {
+                                    render_line(index, html! { { line } })
+                                })
+                            }
+                            </>
+                        }
+                    }
                 }
             </code>
         </pre>

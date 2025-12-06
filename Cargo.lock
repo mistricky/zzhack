@@ -3127,6 +3127,7 @@ dependencies = [
  "async-trait",
  "boa_engine",
  "getrandom 0.3.4",
+ "gloo-worker 0.4.0",
  "js-sys",
  "katex",
  "micro_cli",
