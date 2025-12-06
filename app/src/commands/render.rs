@@ -1,6 +1,7 @@
 use crate::commands::fetch::fetch_text_with_cache;
 use crate::commands::{parse_cli, CommandContext};
 use crate::components::markdown_renderer::{Avatar, Header};
+use crate::components::Typewriter;
 use crate::config_service::ConfigService;
 use crate::markdown_renderer::MarkdownRenderer;
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind, VfsNode};
@@ -21,6 +22,20 @@ pub struct RenderCommand {
         help = "Render markdown file without header"
     )]
     raw: bool,
+
+    #[arg(
+        short = 't',
+        long = "tyoewriter-style",
+        help = "Render markdown with typewriter effect"
+    )]
+    typewriter_style: bool,
+
+    #[arg(
+        short = 'd',
+        long = "typewriter-delay",
+        help = "Delay between characters in typewriter effect"
+    )]
+    typewriter_delay: Option<u32>,
 }
 
 impl ExecutableCommand<CommandContext> for RenderCommand {
@@ -102,6 +117,11 @@ async fn run_render(cli: RenderCommand, ctx: CommandContext) {
     match fetch_text_with_cache(&uri, &cache).await {
         Ok(content) => {
             let rendered = MarkdownRenderer::new().render(&content);
+            let rendered = if cli.typewriter_style {
+                html! {<Typewriter content={rendered} delay_ms={cli.typewriter_delay.unwrap_or(10)} />}
+            } else {
+                rendered
+            };
             let node: Html = if cli.raw {
                 rendered
             } else {
@@ -112,7 +132,7 @@ async fn run_render(cli: RenderCommand, ctx: CommandContext) {
                             <Avatar name={author.name.clone()} email={author.email.clone()} />
                             <span class="text-base text-white ml-3">{&author.name}</span>
                         </div>
-                        { rendered }
+                        {rendered}
                     </div>
                 }
             };
