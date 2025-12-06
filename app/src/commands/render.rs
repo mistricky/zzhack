@@ -14,6 +14,13 @@ use yew::{html, Html};
 pub struct RenderCommand {
     #[arg(positional, help = "Path to markdown file")]
     path: String,
+
+    #[arg(
+        short = 'r',
+        long = "raw",
+        help = "Render markdown file without header"
+    )]
+    raw: bool,
 }
 
 impl ExecutableCommand<CommandContext> for RenderCommand {
@@ -95,15 +102,19 @@ async fn run_render(cli: RenderCommand, ctx: CommandContext) {
     match fetch_text_with_cache(&uri, &cache).await {
         Ok(content) => {
             let rendered = MarkdownRenderer::new().render(&content);
-            let node: Html = html! {
-                <div class="py-6 pb-9 text-base text-post">
-                    <Header metadata={node.clone()} />
-                    <div class="flex items-center">
-                        <Avatar name={author.name.clone()} email={author.email.clone()} />
-                        <span class="text-base text-white ml-3">{&author.name}</span>
+            let node: Html = if cli.raw {
+                rendered
+            } else {
+                html! {
+                    <div class="py-6 pb-9 text-base text-post">
+                        <Header metadata={node.clone()} />
+                        <div class="flex items-center">
+                            <Avatar name={author.name.clone()} email={author.email.clone()} />
+                            <span class="text-base text-white ml-3">{&author.name}</span>
+                        </div>
+                        { rendered }
                     </div>
-                    { rendered }
-                </div>
+                }
             };
             ctx.terminal.push_component(node);
         }
