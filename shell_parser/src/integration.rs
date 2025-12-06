@@ -18,9 +18,18 @@ pub trait CommandInfo {
 
     fn command_about(&self) -> &'static str;
 
+    /// Optional aliases that should invoke the same command.
+    fn command_aliases(&self) -> &'static [&'static str] {
+        &[]
+    }
+
     /// Specification for validation.
     fn command_spec(&self) -> CommandSpec {
-        CommandSpec::new(self.command_name(), self.command_about())
+        let mut spec = CommandSpec::new(self.command_name(), self.command_about());
+        for alias in self.command_aliases() {
+            spec = spec.with_alias(*alias);
+        }
+        spec
     }
 }
 

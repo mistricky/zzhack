@@ -17,4 +17,58 @@ pub enum ShellParseError {
     UnterminatedQuote { quote: char, position: usize },
     #[error("trailing escape at {position}")]
     TrailingEscape { position: usize },
+    #[error("alias loop detected for '{name}' at {position}")]
+    AliasLoop { name: String, position: usize },
+    #[error("invalid alias '{name}' at {position}: {message}")]
+    InvalidAlias {
+        name: String,
+        message: String,
+        position: usize,
+    },
+}
+
+impl ShellParseError {
+    pub(crate) fn with_offset(self, offset: usize) -> Self {
+        match self {
+            ShellParseError::UnknownCommand { name, position } => ShellParseError::UnknownCommand {
+                name,
+                position: position + offset,
+            },
+            ShellParseError::InvalidArity {
+                name,
+                min_expected,
+                max_expected,
+                found,
+                position,
+            } => ShellParseError::InvalidArity {
+                name,
+                min_expected,
+                max_expected,
+                found,
+                position: position + offset,
+            },
+            ShellParseError::UnterminatedQuote { quote, position } => {
+                ShellParseError::UnterminatedQuote {
+                    quote,
+                    position: position + offset,
+                }
+            }
+            ShellParseError::TrailingEscape { position } => ShellParseError::TrailingEscape {
+                position: position + offset,
+            },
+            ShellParseError::AliasLoop { name, position } => ShellParseError::AliasLoop {
+                name,
+                position: position + offset,
+            },
+            ShellParseError::InvalidAlias {
+                name,
+                message,
+                position,
+            } => ShellParseError::InvalidAlias {
+                name,
+                message,
+                position: position + offset,
+            },
+        }
+    }
 }

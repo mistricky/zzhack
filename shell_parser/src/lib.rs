@@ -10,6 +10,31 @@
 //! assert_eq!(invocations[0].name, "echo");
 //! assert_eq!(invocations[0].args, vec!["Hello", ">", "./foo.log"]);
 //! ```
+//!
+//! ## Aliases
+//! ```
+//! use shell_parser::{CommandSpec, ShellParser};
+//!
+//! let parser = ShellParser::with_commands([
+//!     CommandSpec::new("list", "List files").with_alias("ls"),
+//! ]);
+//! let invocations = parser.parse("ls src").unwrap();
+//! assert_eq!(invocations[0].name, "list");
+//! ```
+//!
+//! ## Runtime alias definitions
+//! ```
+//! use shell_parser::ShellParser;
+//!
+//! let parser = ShellParser::new();
+//! let script = r#"
+//!     alias hi="echo hi"
+//!     hi world
+//! "#;
+//! let invocations = parser.parse(script).unwrap();
+//! assert_eq!(invocations[1].name, "echo");
+//! assert_eq!(invocations[1].args, vec!["hi", "world"]);
+//! ```
 
 pub mod command;
 pub mod error;

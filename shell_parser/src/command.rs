@@ -7,6 +7,7 @@ pub struct CommandSpec {
     pub about: String,
     pub min_args: usize,
     pub max_args: Option<usize>,
+    pub aliases: Vec<String>,
 }
 
 impl CommandSpec {
@@ -17,6 +18,7 @@ impl CommandSpec {
             name: name.into(),
             min_args: 0,
             max_args: None,
+            aliases: Vec::new(),
         }
     }
 
@@ -29,6 +31,23 @@ impl CommandSpec {
     /// Restrict to at most `count` arguments.
     pub fn with_max_args(mut self, count: usize) -> Self {
         self.max_args = Some(count);
+        self
+    }
+
+    /// Register a single alias that should map to this command.
+    pub fn with_alias(mut self, alias: impl Into<String>) -> Self {
+        self.aliases.push(alias.into());
+        self
+    }
+
+    /// Register multiple aliases that should map to this command.
+    pub fn with_aliases<I, S>(mut self, aliases: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.aliases
+            .extend(aliases.into_iter().map(|alias| alias.into()));
         self
     }
 }
