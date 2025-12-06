@@ -25,7 +25,7 @@ pub struct RenderCommand {
 
     #[arg(
         short = 't',
-        long = "tyoewriter-style",
+        long = "typewriter-style",
         help = "Render markdown with typewriter effect"
     )]
     typewriter_style: bool,
