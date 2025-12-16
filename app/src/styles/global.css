@@ -25,6 +25,10 @@
 }
 
 @layer base {
+  * {
+    @apply font-sans;
+  }
+
   h1 {
     @apply text-2xl;
     @apply text-white;

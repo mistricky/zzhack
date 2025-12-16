@@ -49,7 +49,7 @@ pub fn post_item(props: &PostItemProps) -> Html {
 
     html! {
         <div
-            class="flex flex-col gap-1 text-post hover:text-post-hover hover:cursor-pointer transition-colors duration-150 text-base"
+            class="flex flex-col gap-1 text-white hover:text-white/50 hover:cursor-pointer transition-colors duration-150 text-base"
             onclick={on_click}
         >
             <div class="flex items-center gap-3">
