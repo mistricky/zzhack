@@ -3,7 +3,6 @@ use crate::terminal::Terminal;
 use std::collections::HashMap;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
-use wasm_bindgen_futures::spawn_local;
 use web_sys::{window, Event, History};
 
 pub struct RouterHandle {
@@ -34,10 +33,9 @@ pub fn start_router(terminal: Terminal) -> Option<RouterHandle> {
 pub fn run_route(path: &str, terminal: Terminal) {
     let normalized = normalize_path(path);
     let routes = &ConfigService::get().app.routes;
+
     if let Some(command) = resolve_command(&normalized, routes) {
-        spawn_local(async move {
-            terminal.execute_command(&command).await;
-        });
+        terminal.execute_command(&command);
     }
 }
 

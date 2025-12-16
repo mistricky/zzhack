@@ -21,9 +21,7 @@ impl ExecutableCommand<CommandContext> for NavigateCommand {
         let terminal = ctx.terminal.clone();
 
         spawn_local(async move {
-            terminal
-                .execute_command(&format!("history --push {path}"))
-                .await;
+            terminal.execute_command(&format!("history --push {path}"));
             match terminal.to_terminal() {
                 Some(full_terminal) => run_route(&path, full_terminal),
                 None => terminal.push_error("navigate: unable to execute route"),

@@ -4,7 +4,6 @@ use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind, VfsNode};
 use micro_cli::Parser;
 use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use std::cmp::Ordering;
-use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
 #[derive(Parser, Debug, Default)]
@@ -116,12 +115,8 @@ impl LsCommand {
         let on_post_click = {
             let terminal = ctx.terminal.clone();
             Callback::from(move |metadata: VfsNode| {
-                let terminal = terminal.clone();
-                let path = format!("/posts/{}", metadata.path.clone());
-
-                spawn_local(async move {
-                    terminal.execute_command(&format!("navigate {path}")).await;
-                });
+                let path = format!("/posts/{}", metadata.path);
+                terminal.execute_command(&format!("navigate {path}"));
             })
         };
 

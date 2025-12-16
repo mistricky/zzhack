@@ -121,7 +121,5 @@ fn handle_submit(state: SubmitState) {
         return;
     };
 
-    spawn_local(async move {
-        terminal.process_command(trimmed).await;
-    });
+    terminal.process_command(trimmed);
 }

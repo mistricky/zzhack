@@ -7,6 +7,7 @@ prompt_symbol = "❯"
 routes = [
   { path = "/", command = 'clear && ls -p'},
   { path = "/posts/{*file_path}", command = 'clear && render {*file_path}'},
+  { path = "/{*folder_path}", command = 'clear && render .' },
   { path = "*", command = 'clear && echo "Not found!"' }
 ]
 

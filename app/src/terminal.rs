@@ -52,7 +52,7 @@ impl Terminal {
         }
     }
 
-    pub async fn process_command(&self, trimmed: String) {
+    pub fn process_command(&self, trimmed: String) {
         self.push_line(TermLine {
             body: format!(
                 r#"<div class="text-sm mt-4 text-gray-600">{}</div>"#,
@@ -65,7 +65,7 @@ impl Terminal {
 
         self.history().borrow_mut().push(trimmed.clone());
 
-        self.execute_command(&trimmed).await;
+        self.execute_command(&trimmed);
     }
 }
 
@@ -195,8 +195,9 @@ impl TerminalHandle {
         Ok(self.runner_else()?.help())
     }
 
-    pub async fn execute_command(&self, input: &str) {
+    pub fn execute_command(&self, input: &str) {
         if let Err(err) = self.run_script(input) {
+            tracing::error!("{:?}", &err);
             self.push_error(format_cli_error(err));
         }
     }
