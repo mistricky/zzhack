@@ -6,7 +6,7 @@ use crate::terminal_state::{TerminalAction, TerminalState};
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
 use gloo_timers::future::TimeoutFuture;
-use shell_parser::{with_cli, CliRunner, ScriptResult, ShellParseError};
+use shell_parser::{with_cli, CliRunner, CommandInvocation, ScriptResult, ShellParseError};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::{Rc, Weak};
@@ -198,7 +198,23 @@ impl TerminalHandle {
     }
 
     pub fn execute_command(&self, input: &str) {
-        match self.run_script(input) {
+        let outcome = self.run_script(input);
+        self.handle_execution_result(outcome);
+    }
+
+    fn execute_invocations(&self, commands: Vec<CommandInvocation>) {
+        if commands.is_empty() {
+            return;
+        }
+        let result = self.run_parsed(&commands);
+        self.handle_execution_result(result);
+    }
+
+    fn handle_execution_result(
+        &self,
+        outcome: Result<ScriptResult, shell_parser::integration::ShellCliError>,
+    ) {
+        match outcome {
             Ok(ScriptResult::Completed) => {}
             Ok(ScriptResult::Paused {
                 delay_ms,
@@ -211,14 +227,14 @@ impl TerminalHandle {
         }
     }
 
-    fn schedule_resume(&self, delay_ms: u32, remainder: String) {
+    fn schedule_resume(&self, delay_ms: u32, remainder: Vec<CommandInvocation>) {
+        if remainder.is_empty() {
+            return;
+        }
         let terminal = self.clone();
         spawn_local(async move {
             TimeoutFuture::new(delay_ms).await;
-            if remainder.trim().is_empty() {
-                return;
-            }
-            terminal.execute_command(&remainder);
+            terminal.execute_invocations(remainder);
         });
     }
 
@@ -227,6 +243,13 @@ impl TerminalHandle {
         input: &str,
     ) -> Result<ScriptResult, shell_parser::integration::ShellCliError> {
         self.runner_else()?.run_script(input)
+    }
+
+    fn run_parsed(
+        &self,
+        invocations: &[CommandInvocation],
+    ) -> Result<ScriptResult, shell_parser::integration::ShellCliError> {
+        self.runner_else()?.run_invocations(invocations)
     }
 
     pub fn to_terminal(&self) -> Option<Terminal> {

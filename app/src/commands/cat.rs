@@ -4,6 +4,7 @@ use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
 use micro_cli::Parser;
 use shell_parser::integration::{CommandInfo, ExecutableCommand};
 use wasm_bindgen_futures::spawn_local;
+use yew::html;
 
 #[derive(Parser, Debug, Default)]
 #[command(name = "cat", about = "Print file contents")]
@@ -50,7 +51,9 @@ async fn run_cat(cli: CatCommand, ctx: CommandContext) {
     let uri = format!("/data/{}", path.join("/"));
 
     match fetch_text_with_cache(&uri, &cache).await {
-        Ok(text) => ctx.terminal.push_text(text),
+        Ok(text) => ctx.terminal.push_component(html! {
+            <span class="whitespace-break-spaces">{text}</span>
+        }),
         Err(err) => ctx.terminal.push_error(format!("cat: {err}")),
     }
 }

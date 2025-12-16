@@ -56,8 +56,8 @@ pub fn code_block(props: &CodeBlockProps) -> Html {
     };
 
     html! {
-        <pre class="my-4 overflow-x-auto rounded-lg bg-black/60 text-sm text-slate-100">
-            <code class={classes!(lang_class, "block", "font-mono", "leading-6")}>
+        <pre class="my-4 overflow-x-auto no-scrollbar rounded-lg bg-black/60 text-sm text-slate-100 border border-[0.5px] border-border bg-card shadow-[0_20px_60px_-25px_rgba(0,0,0,0.85)] backdrop-blur-xl ring-[0.5px] ring-border px-2 py-4">
+            <code class={classes!(lang_class, "block", "font-mono", "leading-6", "w-fit")}>
                 {
                     if let Some(lines) = &*highlighted_lines {
                         html! {

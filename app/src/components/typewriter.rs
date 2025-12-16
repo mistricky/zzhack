@@ -124,11 +124,10 @@ pub fn typewriter(props: &TypewriterProps) -> Html {
         }
     });
 
-    let class = classes!("whitespace-pre-wrap", props.class.clone());
     let typed_html = Html::from_html_unchecked(AttrValue::from((*rendered_text).clone()));
 
     html! {
-        <span class={class}>
+        <span class={props.class.clone()}>
             { typed_html }
             <span ref={template_ref} style="display: none;" aria-hidden="true">
                 { props.content.clone() }

@@ -45,8 +45,8 @@ fn main() {
             remainder,
         }) => {
             println!(
-                "script paused for {delay_ms}ms; remaining chunk: {}",
-                remainder.trim()
+                "script paused for {delay_ms}ms; {} commands remaining",
+                remainder.len()
             );
         }
         Err(err) => eprintln!("error: {err}"),

@@ -67,7 +67,10 @@ pub struct CliRunner<C> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ScriptResult {
     Completed,
-    Paused { delay_ms: u32, remainder: String },
+    Paused {
+        delay_ms: u32,
+        remainder: Vec<CommandInvocation>,
+    },
 }
 
 /// Prefix embedded in command errors to signal the runner to pause execution.
@@ -82,22 +85,15 @@ impl<C> CliRunner<C> {
     /// Parse and execute a full script (multiple lines/commands).
     pub fn run_script(&self, script: &str) -> Result<ScriptResult, ShellCliError> {
         let invocations = self.parser.parse(script)?;
-        for (idx, inv) in invocations.iter().enumerate() {
-            match self.run_invocation(inv.name.clone(), inv.args.clone(), None) {
-                Ok(_) => continue,
-                Err(err) => {
-                    if let Some(delay_ms) = pause_delay(&err) {
-                        let remainder = remainder_slice(script, &invocations, idx + 1);
-                        return Ok(ScriptResult::Paused {
-                            delay_ms,
-                            remainder,
-                        });
-                    }
-                    return Err(err);
-                }
-            }
-        }
-        Ok(ScriptResult::Completed)
+        self.run_invocation_slice(&invocations)
+    }
+
+    /// Execute commands that have already been parsed.
+    pub fn run_invocations(
+        &self,
+        invocations: &[CommandInvocation],
+    ) -> Result<ScriptResult, ShellCliError> {
+        self.run_invocation_slice(invocations)
     }
 
     /// Parse and execute a single command line.
@@ -128,12 +124,10 @@ impl<C> CliRunner<C> {
 
     /// Render help text listing registered commands.
     pub fn help(&self) -> String {
-        // let mut names: Vec<&str> = self.specs.iter().map(|spec| spec.name.as_str()).collect();
-        // names.sort_unstable();
         let mut out = String::from("Commands:\n");
 
         for spec in self.specs.iter() {
-            out.push_str(&format!("  {:<10}     {}\n", spec.name, spec.about));
+            out.push_str(&format!("{:<18}{}\n", spec.name, spec.about));
         }
 
         out
@@ -172,6 +166,28 @@ impl<C> CliRunner<C> {
         }
         Ok(())
     }
+
+    fn run_invocation_slice(
+        &self,
+        invocations: &[CommandInvocation],
+    ) -> Result<ScriptResult, ShellCliError> {
+        for (idx, inv) in invocations.iter().enumerate() {
+            match self.run_invocation(inv.name.clone(), inv.args.clone(), None) {
+                Ok(_) => continue,
+                Err(err) => {
+                    if let Some(delay_ms) = pause_delay(&err) {
+                        let remainder = invocations[idx + 1..].to_vec();
+                        return Ok(ScriptResult::Paused {
+                            delay_ms,
+                            remainder,
+                        });
+                    }
+                    return Err(err);
+                }
+            }
+        }
+        Ok(ScriptResult::Completed)
+    }
 }
 
 fn pause_delay(err: &ShellCliError) -> Option<u32> {
@@ -185,15 +201,6 @@ fn pause_delay(err: &ShellCliError) -> Option<u32> {
 
 fn parse_pause_signal(message: &str) -> Option<&str> {
     message.strip_prefix(PAUSE_SIGNAL_PREFIX)
-}
-
-fn remainder_slice(script: &str, invocations: &[CommandInvocation], next_index: usize) -> String {
-    if next_index >= invocations.len() {
-        String::new()
-    } else {
-        let start = invocations[next_index].position;
-        script[start..].to_string()
-    }
 }
 
 /// Create a [`CliRunner`] by registering executable commands.

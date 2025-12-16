@@ -38,6 +38,10 @@
     @apply text-xl;
     color: #dddddd;
   }
+
+  .output-log p {
+    @apply my-6;
+  }
 }
 
 @keyframes halo-drift {
@@ -62,6 +66,15 @@
 @layer utilities {
   .halo-animate {
     animation: halo-drift 9s ease-in-out infinite;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
 
