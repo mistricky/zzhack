@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::command::CommandInvocation;
 use crate::{CommandSpec, ShellParseError, ShellParser};
 
 /// Error surfaced when wiring parsed commands into executable handlers.
@@ -62,23 +63,50 @@ pub struct CliRunner<C> {
     context: C,
 }
 
+/// Result of running a script through the CLI runner.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScriptResult {
+    Completed,
+    Paused { delay_ms: u32, remainder: String },
+}
+
+/// Prefix embedded in command errors to signal the runner to pause execution.
+pub const PAUSE_SIGNAL_PREFIX: &str = "__zzhack_pause__:";
+
+/// Build a pause signal string for a command to interrupt script execution.
+pub fn pause_signal(delay_ms: u32) -> String {
+    format!("{PAUSE_SIGNAL_PREFIX}{delay_ms}")
+}
+
 impl<C> CliRunner<C> {
     /// Parse and execute a full script (multiple lines/commands).
-    pub fn run_script(&self, script: &str) -> Result<(), ShellCliError> {
+    pub fn run_script(&self, script: &str) -> Result<ScriptResult, ShellCliError> {
         let invocations = self.parser.parse(script)?;
-        for inv in invocations {
-            self.run_invocation(inv.name, inv.args, None)?;
+        for (idx, inv) in invocations.iter().enumerate() {
+            match self.run_invocation(inv.name.clone(), inv.args.clone(), None) {
+                Ok(_) => continue,
+                Err(err) => {
+                    if let Some(delay_ms) = pause_delay(&err) {
+                        let remainder = remainder_slice(script, &invocations, idx + 1);
+                        return Ok(ScriptResult::Paused {
+                            delay_ms,
+                            remainder,
+                        });
+                    }
+                    return Err(err);
+                }
+            }
         }
-        Ok(())
+        Ok(ScriptResult::Completed)
     }
 
     /// Parse and execute a single command line.
-    pub fn run_line(&self, line: &str) -> Result<(), ShellCliError> {
+    pub fn run_line(&self, line: &str) -> Result<ScriptResult, ShellCliError> {
         self.run_script(line)
     }
 
     /// Parse and execute a script that may contain pipelines (`|`).
-    pub fn run_pipeline_script(&self, script: &str) -> Result<(), ShellCliError> {
+    pub fn run_pipeline_script(&self, script: &str) -> Result<ScriptResult, ShellCliError> {
         let parsed = self.parser.parse_with_separators(script)?;
         let mut pipeline: Vec<(String, Vec<String>)> = Vec::new();
 
@@ -95,7 +123,7 @@ impl<C> CliRunner<C> {
             self.execute_pipeline(&pipeline)?;
         }
 
-        Ok(())
+        Ok(ScriptResult::Completed)
     }
 
     /// Render help text listing registered commands.
@@ -117,6 +145,11 @@ impl<C> CliRunner<C> {
         args: Vec<String>,
         input: Option<String>,
     ) -> Result<Option<String>, ShellCliError> {
+        if name == "alias" {
+            // Alias definitions are applied by the parser itself, so there is no runnable handler.
+            return Ok(input);
+        }
+
         let handler = self
             .handlers
             .get(&name)
@@ -138,6 +171,28 @@ impl<C> CliRunner<C> {
             input = self.run_invocation(name.clone(), args.clone(), input)?;
         }
         Ok(())
+    }
+}
+
+fn pause_delay(err: &ShellCliError) -> Option<u32> {
+    match err {
+        ShellCliError::Execution { message, .. } => {
+            parse_pause_signal(message).and_then(|delay| delay.parse().ok())
+        }
+        _ => None,
+    }
+}
+
+fn parse_pause_signal(message: &str) -> Option<&str> {
+    message.strip_prefix(PAUSE_SIGNAL_PREFIX)
+}
+
+fn remainder_slice(script: &str, invocations: &[CommandInvocation], next_index: usize) -> String {
+    if next_index >= invocations.len() {
+        String::new()
+    } else {
+        let start = invocations[next_index].position;
+        script[start..].to_string()
     }
 }
 

@@ -135,6 +135,78 @@ fn resolves_aliases_to_canonical_names() {
 }
 
 #[test]
+fn runs_runtime_functions() {
+    let parser = ShellParser::new();
+    let script = r#"
+        function greet() {
+            echo hello
+            echo $1
+            echo $#
+        }
+        greet "Rustacean"
+    "#;
+
+    let parsed = parser.parse(script).unwrap();
+    assert_eq!(parsed.len(), 3);
+    assert_eq!(parsed[0].name, "echo");
+    assert_eq!(parsed[0].args, vec!["hello"]);
+    assert_eq!(parsed[1].args, vec!["Rustacean"]);
+    assert_eq!(parsed[2].args, vec!["1"]);
+}
+
+#[test]
+fn functions_support_bare_syntax_and_variadic_args() {
+    let parser = ShellParser::new();
+    let script = r#"
+greet() {
+    concat $@
+}
+greet one two three
+"#;
+
+    let parsed = parser.parse(script).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(parsed[0].name, "concat");
+    assert_eq!(parsed[0].args, vec!["one", "two", "three"]);
+}
+
+#[test]
+fn detects_invalid_function_bodies() {
+    let parser = ShellParser::new();
+    let err = parser
+        .parse(
+            r#"
+                function broken() {
+                    echo oops
+            "#,
+        )
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        ShellParseError::InvalidFunction { name, .. } if name == "broken"
+    ));
+}
+
+#[test]
+fn detects_function_recursion() {
+    let parser = ShellParser::new();
+    let err = parser
+        .parse(
+            r#"
+                function loopme() {
+                    loopme
+                }
+                loopme
+            "#,
+        )
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        ShellParseError::AliasLoop { name, .. } if name == "loopme"
+    ));
+}
+
+#[test]
 fn parses_runtime_alias_definitions() {
     let parser = ShellParser::new();
     let script = r#"

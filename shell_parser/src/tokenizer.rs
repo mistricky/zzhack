@@ -56,11 +56,18 @@ pub(crate) fn tokenize(input: &str) -> Result<Vec<CommandTokens>, ShellParseErro
                     }
                 }
                 '#' => {
-                    while let Some((_, next)) = iter.peek() {
-                        if *next == '\n' {
-                            break;
+                    if current_token.is_empty() {
+                        while let Some((_, next)) = iter.peek() {
+                            if *next == '\n' {
+                                break;
+                            }
+                            iter.next();
                         }
-                        iter.next();
+                    } else {
+                        if token_start.is_none() {
+                            token_start = Some(idx);
+                        }
+                        current_token.push('#');
                     }
                 }
                 '&' => {
@@ -84,6 +91,13 @@ pub(crate) fn tokenize(input: &str) -> Result<Vec<CommandTokens>, ShellParseErro
                         _ => None,
                     };
                     push_command(&mut commands, &mut current_command, separator);
+                }
+                '{' | '}' => {
+                    push_token(&mut current_command, &mut current_token, &mut token_start);
+                    current_command.push(Token {
+                        value: ch.to_string(),
+                        position: idx,
+                    });
                 }
                 c if c.is_whitespace() => {
                     push_token(&mut current_command, &mut current_token, &mut token_start);

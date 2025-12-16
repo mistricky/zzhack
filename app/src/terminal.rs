@@ -5,10 +5,12 @@ use crate::config_service::ConfigService;
 use crate::terminal_state::{TerminalAction, TerminalState};
 use crate::types::{OutputKind, TermLine};
 use crate::vfs_data::{load_vfs, VfsNode};
-use shell_parser::{with_cli, CliRunner, ShellParseError};
+use gloo_timers::future::TimeoutFuture;
+use shell_parser::{with_cli, CliRunner, ScriptResult, ShellParseError};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::{Rc, Weak};
+use wasm_bindgen_futures::spawn_local;
 use yew::UseReducerHandle;
 
 struct TerminalCore {
@@ -196,13 +198,34 @@ impl TerminalHandle {
     }
 
     pub fn execute_command(&self, input: &str) {
-        if let Err(err) = self.run_script(input) {
-            tracing::error!("{:?}", &err);
-            self.push_error(format_cli_error(err));
+        match self.run_script(input) {
+            Ok(ScriptResult::Completed) => {}
+            Ok(ScriptResult::Paused {
+                delay_ms,
+                remainder,
+            }) => self.schedule_resume(delay_ms, remainder),
+            Err(err) => {
+                tracing::error!("{:?}", &err);
+                self.push_error(format_cli_error(err));
+            }
         }
     }
 
-    fn run_script(&self, input: &str) -> Result<(), shell_parser::integration::ShellCliError> {
+    fn schedule_resume(&self, delay_ms: u32, remainder: String) {
+        let terminal = self.clone();
+        spawn_local(async move {
+            TimeoutFuture::new(delay_ms).await;
+            if remainder.trim().is_empty() {
+                return;
+            }
+            terminal.execute_command(&remainder);
+        });
+    }
+
+    fn run_script(
+        &self,
+        input: &str,
+    ) -> Result<ScriptResult, shell_parser::integration::ShellCliError> {
         self.runner_else()?.run_script(input)
     }
 

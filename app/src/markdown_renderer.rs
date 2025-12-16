@@ -1,9 +1,9 @@
-use pulldown_cmark::{html, CodeBlockKind, Event, Options, Parser, Tag};
+use pulldown_cmark::{html, CodeBlockKind, CowStr, Event, Options, Parser, Tag};
 use std::borrow::Cow;
 use yew::prelude::*;
 
 use crate::components::markdown_renderer::{
-    Blockquote, CodeBlock, InlineCode, Link, MathBlock, MathInline, OrderedList, UnorderedList,
+    Blockquote, CodeBlock, Link, MathBlock, MathInline, OrderedList, UnorderedList,
 };
 
 pub trait MarkdownFilter {
@@ -165,13 +165,9 @@ fn render_events<'a>(events: Vec<Event<'a>>) -> Vec<Html> {
                 let code = collect_code_block(&mut iter);
                 nodes.push(render_code_block(kind, code));
             }
-            Event::Code(text) => {
-                if !buffer.is_empty() {
-                    nodes.push(events_to_html(buffer));
-                    buffer = Vec::new();
-                }
-                nodes.push(html! { <InlineCode code={text.to_string()} /> });
-            }
+            Event::Code(text) => buffer.push(Event::Html(CowStr::Boxed(
+                render_inline_code_html(text.as_ref()).into_boxed_str(),
+            ))),
             Event::Text(text) => {
                 if text.trim() == "$$" {
                     if !buffer.is_empty() {
@@ -371,6 +367,28 @@ fn render_code_block(kind: CodeBlockKind<'_>, code: String) -> Html {
     }
 
     html! { <CodeBlock code={code} language={language.map(AttrValue::from)} /> }
+}
+
+fn render_inline_code_html(content: &str) -> String {
+    format!(
+        r#"<code class="rounded bg-white/10 px-1.5 py-0.5 text-sm font-mono text-white/90">{}</code>"#,
+        escape_html(content)
+    )
+}
+
+fn escape_html(input: &str) -> String {
+    let mut escaped = String::with_capacity(input.len());
+    for ch in input.chars() {
+        match ch {
+            '&' => escaped.push_str("&amp;"),
+            '<' => escaped.push_str("&lt;"),
+            '>' => escaped.push_str("&gt;"),
+            '"' => escaped.push_str("&quot;"),
+            '\'' => escaped.push_str("&#39;"),
+            _ => escaped.push(ch),
+        }
+    }
+    escaped
 }
 
 enum MathSegment {

@@ -1,0 +1,6 @@
+function echo_with_next_prompt() {
+  builtin echo "$@"
+  render -t -r 02_help.md
+}
+
+alias echo="echo_with_next_prompt"

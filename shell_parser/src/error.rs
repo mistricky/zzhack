@@ -17,10 +17,16 @@ pub enum ShellParseError {
     UnterminatedQuote { quote: char, position: usize },
     #[error("trailing escape at {position}")]
     TrailingEscape { position: usize },
-    #[error("alias loop detected for '{name}' at {position}")]
+    #[error("alias/function loop detected for '{name}' at {position}")]
     AliasLoop { name: String, position: usize },
     #[error("invalid alias '{name}' at {position}: {message}")]
     InvalidAlias {
+        name: String,
+        message: String,
+        position: usize,
+    },
+    #[error("invalid function '{name}' at {position}: {message}")]
+    InvalidFunction {
         name: String,
         message: String,
         position: usize,
@@ -65,6 +71,15 @@ impl ShellParseError {
                 message,
                 position,
             } => ShellParseError::InvalidAlias {
+                name,
+                message,
+                position: position + offset,
+            },
+            ShellParseError::InvalidFunction {
+                name,
+                message,
+                position,
+            } => ShellParseError::InvalidFunction {
                 name,
                 message,
                 position: position + offset,

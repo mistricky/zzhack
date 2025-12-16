@@ -5,6 +5,7 @@ mod clear;
 mod du;
 mod echo;
 mod email;
+mod eval;
 mod fetch;
 mod help;
 mod history;
@@ -12,6 +13,7 @@ mod ls;
 mod navigate;
 mod pwd;
 mod render;
+mod sleep;
 mod stat;
 mod theme;
 mod whoami;
@@ -31,6 +33,7 @@ pub use clear::ClearCommand;
 pub use du::DuCommand;
 pub use echo::EchoCommand;
 pub use email::EmailCommand;
+pub use eval::EvalCommand;
 pub use fetch::FetchCommand;
 pub use help::HelpCommand;
 pub use history::HistoryCommand;
@@ -38,6 +41,7 @@ pub use ls::LsCommand;
 pub use navigate::NavigateCommand;
 pub use pwd::PwdCommand;
 pub use render::RenderCommand;
+pub use sleep::SleepCommand;
 pub use stat::StatCommand;
 pub use theme::ThemeCommand;
 pub use whoami::WhoAmICommand;
@@ -69,6 +73,7 @@ pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
         Box::new(EchoCommand::default()),
         Box::new(LsCommand::default()),
         Box::new(CatCommand::default()),
+        Box::new(EvalCommand::default()),
         Box::new(CdCommand::default()),
         Box::new(StatCommand::default()),
         Box::new(DuCommand::default()),
@@ -81,6 +86,7 @@ pub fn command_handlers() -> Vec<Box<dyn ExecutableCommand<CommandContext>>> {
         Box::new(WhoAmICommand::default()),
         Box::new(ThemeCommand::default()),
         Box::new(NavigateCommand::default()),
+        Box::new(SleepCommand::default()),
         Box::new(HistoryCommand::default()),
         Box::new(HelpCommand::default()),
     ]

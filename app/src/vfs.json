@@ -4,9 +4,48 @@
   "kind": "directory",
   "extension": null,
   "size": null,
-  "modified": "2025-12-03T12:44:57.974001491Z",
-  "children_count": 10,
+  "modified": "2025-12-16T09:50:02.889432225Z",
+  "children_count": 16,
   "children": [
+    {
+      "name": ".shrc",
+      "path": ".shrc",
+      "kind": "file",
+      "extension": null,
+      "size": 119,
+      "modified": "2025-12-16T09:50:02.888989992Z",
+      "children_count": null,
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
+    },
+    {
+      "name": "01_greeter.md",
+      "path": "01_greeter.md",
+      "kind": "file",
+      "extension": "md",
+      "size": 439,
+      "modified": "2025-12-16T08:07:51.358873581Z",
+      "children_count": null,
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
+    },
+    {
+      "name": "02_help.md",
+      "path": "02_help.md",
+      "kind": "file",
+      "extension": "md",
+      "size": 676,
+      "modified": "2025-12-16T09:47:15.486857339Z",
+      "children_count": null,
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
+    },
     {
       "name": "COVER.png",
       "path": "COVER.png",
@@ -14,6 +53,19 @@
       "extension": "png",
       "size": 894385,
       "modified": "2025-11-27T10:40:40.723013512Z",
+      "children_count": null,
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
+    },
+    {
+      "name": "Pasted image.png",
+      "path": "Pasted image.png",
+      "kind": "file",
+      "extension": "png",
+      "size": 9233,
+      "modified": "2025-12-16T07:19:31.534133710Z",
       "children_count": null,
       "children": null,
       "title": null,
@@ -100,6 +152,19 @@
       "is_post": false
     },
     {
+      "name": "greeter_next.svg",
+      "path": "greeter_next.svg",
+      "kind": "file",
+      "extension": "svg",
+      "size": 1391,
+      "modified": "2025-12-16T07:26:54.142816779Z",
+      "children_count": null,
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
+    },
+    {
       "name": "img.png",
       "path": "img.png",
       "kind": "file",
@@ -110,19 +175,6 @@
       "children": null,
       "title": null,
       "description": null,
-      "is_post": false
-    },
-    {
-      "name": "index.md",
-      "path": "index.md",
-      "kind": "file",
-      "extension": "md",
-      "size": 3247,
-      "modified": "2025-12-03T12:44:57.964475566Z",
-      "children_count": null,
-      "children": null,
-      "title": "Data datalog",
-      "description": "Root directory includes all demo files and images",
       "is_post": false
     },
     {
@@ -163,6 +215,32 @@
       ],
       "title": null,
       "description": null,
+      "is_post": false
+    },
+    {
+      "name": "logo.svg",
+      "path": "logo.svg",
+      "kind": "file",
+      "extension": "svg",
+      "size": 490,
+      "modified": "2025-12-16T06:44:01.149838755Z",
+      "children_count": null,
+      "children": null,
+      "title": null,
+      "description": null,
+      "is_post": false
+    },
+    {
+      "name": "markdown.md",
+      "path": "markdown.md",
+      "kind": "file",
+      "extension": "md",
+      "size": 3247,
+      "modified": "2025-12-03T12:44:57.964475566Z",
+      "children_count": null,
+      "children": null,
+      "title": "Data datalog",
+      "description": "Root directory includes all demo files and images",
       "is_post": false
     },
     {
@@ -221,5 +299,5 @@
   ],
   "title": null,
   "description": null,
-  "is_post": true
+  "is_post": false
 }

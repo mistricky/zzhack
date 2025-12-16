@@ -8,6 +8,8 @@ use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 use yew::{prelude::*, use_effect_with, use_mut_ref, use_reducer};
 
+const SHRC_CONTENT: &str = include_str!("../../data/.shrc");
+
 #[derive(Clone)]
 struct SubmitState {
     terminal: Rc<RefCell<Option<Terminal>>>,
@@ -40,6 +42,7 @@ pub fn app() -> Html {
                 }
 
                 terminal_ready.set(true);
+                built.execute_command(SHRC_CONTENT);
             });
             || ()
         });

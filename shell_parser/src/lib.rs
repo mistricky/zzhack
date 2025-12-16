@@ -45,7 +45,10 @@ mod tokenizer;
 
 pub use crate::command::{CommandInvocation, CommandSpec, ParsedCommand};
 pub use crate::error::ShellParseError;
-pub use crate::integration::{with_cli, CliRunner, ExecutableCommand, ShellCliError};
+pub use crate::integration::{
+    pause_signal, with_cli, CliRunner, ExecutableCommand, ScriptResult, ShellCliError,
+    PAUSE_SIGNAL_PREFIX,
+};
 pub use crate::parser::ShellParser;
 pub use crate::separator::Separator;
 

@@ -12,6 +12,7 @@ use cli::add_cli::AddCli;
 use cli::echo_cli::EchoCli;
 use cli::RunnerContext;
 use shell_parser::integration::{with_cli, ExecutableCommand};
+use shell_parser::ScriptResult;
 
 fn main() {
     let context = RunnerContext {
@@ -23,13 +24,32 @@ fn main() {
 
     // Execute a script through shell_parser and dispatch to the derived CLIs.
     let script = r#"
+        function greet() {
+            echo --name hello $1
+            echo --name "args:" $#
+        }
+
+        alias ll="echo";
+
+        greet "world";
+
         echo --name Micro --count 2 && add --lhs 2 --rhs 3 && echo --name Done --count 1
-        echo --help
+        ll --help
         add -h
     "#;
 
-    if let Err(err) = runner.run_script(script) {
-        eprintln!("error: {err}");
+    match runner.run_script(script) {
+        Ok(ScriptResult::Completed) => {}
+        Ok(ScriptResult::Paused {
+            delay_ms,
+            remainder,
+        }) => {
+            println!(
+                "script paused for {delay_ms}ms; remaining chunk: {}",
+                remainder.trim()
+            );
+        }
+        Err(err) => eprintln!("error: {err}"),
     }
 
     println!("{}", runner.help());

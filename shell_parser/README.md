@@ -7,6 +7,7 @@ Pure shell-like parser that works in any environment without system API dependen
 - Optional command validation via `CommandSpec` (min/max args, unknown-command errors).
 - Access to parsed separators through `parse_with_separators` to build pipelines.
 - Command aliases declared through specs *and* runtime `alias name="value"` statements that behave like real shells.
+- Runtime shell functions declared with `function name() { ... }` (or `name() { ... }`) that expand at call sites with positional parameters (`$1`, `$@`, `$*`, `$#`).
 - Zero system calls in the library; you provide execution logic.
 
 ## Installation
@@ -55,6 +56,12 @@ Run the bundled examples to see end-to-end usage:
   cargo run -p shell_parser --example alias
   ```
   Demonstrates how `alias ll="list -l"` and `alias greet='echo hi; echo bye'` expand into multiple commands.
+
+- Runtime functions with positional parameters:
+  ```bash
+  cargo run -p shell_parser --example function
+  ```
+  Shows how `function greet() { ... }` definitions expand and how `$1`/`$@`/`$#` values are substituted.
 
 - Basic commands with real file I/O for `echo`, `cd`, and `cat`:
   ```bash
@@ -111,6 +118,36 @@ assert_eq!(parsed[3].args, vec!["warning:", "be careful"]);
 ```
 
 Alias definitions persist across successive `parse` calls while the parser lives, and invalid recursive aliases surface a `ShellParseError::AliasLoop`.
+
+## Runtime functions
+Shell functions declared with either `function name() { ... }` or the bare `name() { ... }` syntax are parsed once and expanded only when invoked later. Function bodies can span multiple commands and may use positional parameters:
+
+```rust
+use shell_parser::ShellParser;
+
+let parser = ShellParser::new();
+let script = r#"
+    function greet() {
+        echo hello $1
+        echo "args:" $#
+    }
+
+    twice() {
+        greet $1
+        greet $2
+    }
+
+    greet "terminal"
+    twice "micro" "cli"
+"#;
+let parsed = parser.parse(script).unwrap();
+assert_eq!(parsed[0].args, vec!["hello", "terminal"]);
+assert_eq!(parsed[1].args, vec!["args:", "1"]);
+assert_eq!(parsed[2].args, vec!["hello", "micro"]);
+assert_eq!(parsed[4].args, vec!["hello", "cli"]);
+```
+
+Function definitions expect the opening `{` at the end of the header line (or the following line by itself) and the closing `}` on its own line. Definition lines are consumed during parsing so executors never see a `function` command. Positional placeholders `$1`, `$2`, …, `$@`, `$*`, and `$#` are substituted at expansion time, while other `$var` references are left untouched for executors to handle.
 
 ## Notes
 - The library never executes commands; it only parses. You control execution and side effects.
