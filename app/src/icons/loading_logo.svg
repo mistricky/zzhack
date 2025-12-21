@@ -1,0 +1,52 @@
+<svg width="40" height="29" viewBox="0 0 40 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .shape {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: jump 1.8s infinite;
+    }
+
+    .circle {
+      animation-delay: 0s;
+    }
+
+    .triangle {
+      animation-delay: 0.6s;
+    }
+
+    .square {
+      animation-delay: 1.2s;
+    }
+
+    @keyframes jump {
+      0% {
+        transform: translateY(0) scaleY(1) rotate(0deg);
+      }
+      12% {
+        transform: translateY(2px) scaleY(0.88) rotate(0deg);
+      }
+      35% {
+        transform: translateY(-14px) scaleY(1.08) rotate(360deg);
+      }
+      55% {
+        transform: translateY(0) scaleY(1) rotate(0deg);
+      }
+      70% {
+        transform: translateY(-3px) scaleY(1.03) rotate(-10deg);
+      }
+      100% {
+        transform: translateY(0) scaleY(1) rotate(0deg);
+      }
+    }
+  </style>
+
+  <g class="shape square">
+    <rect x="11.291" width="20" height="20" rx="5" transform="rotate(6.98839 11.291 0)" fill="#FF7979"/>
+  </g>
+  <g class="shape circle">
+    <circle cx="8" cy="9.14258" r="8" fill="#70A1FF"/>
+  </g>
+  <g class="shape triangle">
+    <path d="M25.5943 8.15645C25.7834 7.35408 26.8075 7.11219 27.3355 7.74517L38.9501 21.6672C39.4233 22.2345 39.1392 23.1014 38.422 23.2786L22.607 27.1853C21.8811 27.3646 21.2224 26.7129 21.3938 25.9851L25.5943 8.15645Z" fill="#FFBE76"/>
+  </g>
+</svg>
