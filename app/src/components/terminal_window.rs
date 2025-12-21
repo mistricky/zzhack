@@ -27,7 +27,7 @@ pub fn terminal_window(props: &TerminalWindowProps) -> Html {
     };
 
     html! {
-        <div class="min-h-[100svh] bg-page text-text flex items-start sm:items-center justify-center px-4 pt-16 pb-6 sm:p-6 overflow-y-auto">
+        <div class="w-full min-h-[100svh] bg-page text-text flex items-start sm:items-center justify-center px-4 pt-16 pb-6 sm:p-6 overflow-y-auto">
             {
                 if !props.show_window {
                     html! {
