@@ -44,10 +44,24 @@ pub fn code_block(props: &CodeBlockProps) -> Html {
         });
     }
 
+    let total_lines = if let Some(lines) = &*highlighted_lines {
+        lines.len()
+    } else {
+        props.code.as_ref().split_inclusive('\n').count()
+    };
+    let max_digits = total_lines.max(1).to_string().len();
+    let line_number_style = format!("min-width: {}ch;", max_digits + 1);
+
     let render_line = |index: usize, content: Html| {
         html! {
             <span class="grid grid-cols-[auto,1fr] gap-4">
-                <span class="w-12 select-none text-right pr-2 text-slate-500 tabular-nums" aria-hidden="true">{ index + 1 }</span>
+                <span
+                    class="sticky left-0 z-10 block select-none bg-black/60 backdrop-blur-md text-right pr-2 text-slate-500 tabular-nums"
+                    style={line_number_style.clone()}
+                    aria-hidden="true"
+                >
+                    { index + 1 }
+                </span>
                 <span class="block whitespace-pre">
                     { content }
                 </span>
