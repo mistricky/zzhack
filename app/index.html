@@ -65,57 +65,5 @@
         </g>
       </svg>
     </div>
-    <div id="loading-log" style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;font-size:16px;line-height:1.6;height:4.8em;overflow:hidden;width:90vw;max-width:420px;margin-bottom:24px;">
-      <div><span style="color:#34d399;">[ OK ]</span> Style loaded</div>
-    </div>
-    <script>
-      (function () {
-        var log = document.getElementById("loading-log");
-        if (!log) {
-          return;
-        }
-
-        var steps = [
-          "Brain mounted",
-          "Reached target Graphical Interface",
-          "Fake Terminal loaded",
-          "Restored session cache",
-          "Initialized virtual console",
-          "Indexed command registry",
-          "Prepared workspace",
-          "Primed render pipeline",
-          "Handshaking with UI core",
-        ];
-
-        var index = 0;
-        var interval = 200;
-        var ok_label = '<span style="color:#34d399;">[ OK ]</span> ';
-        var working_label = '<span style="color:#facc15;">[ Working ]</span> ';
-
-        function appendLine(text, label) {
-          var line = document.createElement("div");
-          line.innerHTML = label + text;
-          log.appendChild(line);
-          while (log.children.length > 3) {
-            log.removeChild(log.firstChild);
-          }
-        }
-
-        function tick() {
-          if (index >= steps.length) {
-            return;
-          }
-
-          var is_last = index === steps.length - 1;
-          appendLine(steps[index], is_last ? working_label : ok_label);
-          index += 1;
-          if (index < steps.length) {
-            setTimeout(tick, interval);
-          }
-        }
-
-        setTimeout(tick, interval);
-      })();
-    </script>
   </body>
 </html>
