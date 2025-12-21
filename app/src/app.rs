@@ -105,9 +105,6 @@ pub fn app() -> Html {
 
     html! {
         <>
-            <div class="w-full flex items-center justify-center mb-4">
-                { loading_logo }
-            </div>
             <TerminalWindow
                 lines={displayed_lines}
                 input={(*input).clone()}
