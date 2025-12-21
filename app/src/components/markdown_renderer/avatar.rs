@@ -23,7 +23,7 @@ pub fn avatar(props: &AvatarProps) -> Html {
             <img
                 src={avatar_url}
                 alt={format!("{}'s avatar", props.name)}
-                class="my-6 w-10 h-10 rounded-full object-cover"
+                class="mt-6 w-10 h-10 rounded-full object-cover"
             />
         </a>
     }

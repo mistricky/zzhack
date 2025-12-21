@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
   --color-page-bg: #f8fafc;
   --color-card-bg: rgba(255, 255, 255, 0.9);
@@ -32,11 +31,19 @@
   h1 {
     @apply text-2xl;
     @apply text-white;
+    @apply my-6;
+    @apply mt-10;
   }
 
   h2 {
     @apply text-xl;
     color: #dddddd;
+    @apply my-6;
+    @apply mt-10;
+  }
+
+  h3 {
+    @apply text-lg;
   }
 
   .output-log p {

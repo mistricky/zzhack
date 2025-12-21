@@ -130,7 +130,7 @@ async fn run_render(cli: RenderCommand, ctx: CommandContext) {
                         <Header metadata={node.clone()} />
                         <div class="flex items-center">
                             <Avatar name={author.name.clone()} email={author.email.clone()} />
-                            <span class="text-base text-white ml-3">{&author.name}</span>
+                            <span class="text-base text-white mt-6 ml-3">{&author.name}</span>
                         </div>
                         {rendered}
                     </div>
