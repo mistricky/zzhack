@@ -52,10 +52,10 @@ pub fn prompt_line(props: &PromptLineProps) -> Html {
     };
 
     html! {
-        <form onsubmit={on_submit} class="flex items-center mt-3 gap-3 font-mono text-sm text-slate-100">
+        <form onsubmit={on_submit} class="flex items-center mt-4 sm:mt-3 gap-2 sm:gap-3 font-mono text-base sm:text-sm text-slate-100">
             <span class="text-emerald-400">{ ConfigService::get().app.prompt_symbol.clone() }</span>
             <input
-                class="flex-1 bg-transparent text-slate-100 outline-none placeholder:text-slate-600"
+                class="flex-1 bg-transparent text-slate-100 outline-none placeholder:text-slate-600 text-base sm:text-sm"
                 type="text"
                 value={props.value.clone()}
                 oninput={on_input}

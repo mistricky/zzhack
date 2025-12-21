@@ -10,7 +10,7 @@ pub struct OutputLogProps {
 #[function_component(OutputLog)]
 pub fn output_log(props: &OutputLogProps) -> Html {
     html! {
-        <div class="space-y-1 font-mono text-sm text-slate-100">
+        <div class="space-y-1 font-mono text-base sm:text-sm text-slate-100">
             { for props.lines.iter().enumerate().map(|(idx, line)| render_line(idx, line)) }
         </div>
     }
