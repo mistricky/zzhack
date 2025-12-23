@@ -32,7 +32,8 @@ web-sys = { version = "0.3", features = [
     "ReadableStream",
     "Blob",
     "AbortController",
-    "HtmlInputElement"
+    "HtmlInputElement",
+    "Clipboard"
 ] }
 shell_parser = { path = "../shell_parser" }
 serde = { version = "1", features = ["derive"] }
