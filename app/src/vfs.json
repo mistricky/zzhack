@@ -4,7 +4,7 @@
   "kind": "directory",
   "extension": null,
   "size": null,
-  "modified": "2025-12-21T12:50:53.081434110Z",
+  "modified": "2025-12-23T14:47:04.996893963Z",
   "children_count": 18,
   "children": [
     {
@@ -12,8 +12,8 @@
       "path": ".shrc",
       "kind": "file",
       "extension": null,
-      "size": 400,
-      "modified": "2025-12-16T11:32:55.853454078Z",
+      "size": 1,
+      "modified": "2025-12-23T14:47:04.988086036Z",
       "children_count": null,
       "children": null,
       "title": null,

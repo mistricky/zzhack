@@ -9,7 +9,6 @@ use wasm_bindgen_futures::spawn_local;
 use yew::{prelude::*, use_effect_with, use_mut_ref, use_reducer};
 
 const SHRC_CONTENT: &str = include_str!("../../data/.shrc");
-const LOADING_LOGO: &str = include_str!("icons/loading_logo.svg");
 
 #[derive(Clone)]
 struct SubmitState {
@@ -100,8 +99,6 @@ pub fn app() -> Html {
 
     let config = ConfigService::get();
     let show_window = config.app.terminal_window;
-
-    let loading_logo = Html::from_html_unchecked(AttrValue::from(LOADING_LOGO));
 
     html! {
         <>

@@ -34,25 +34,28 @@ impl ExecutableCommand<CommandContext> for LsCommand {
         match find_node(&ctx.vfs, &path) {
             Some(node) if node.kind == VfsKind::Directory => match &node.children {
                 Some(children) if !children.is_empty() => {
-                    let mut entries: Vec<(String, String)> = children
-                        .iter()
-                        .map(|child| {
-                            let sort_key = child.name.clone();
-                            let display = if child.kind == VfsKind::Directory {
-                                format!(r#"<span class="text-sky-300">{}/</span>"#, child.name)
-                            } else {
-                                format!(r#"<span class="text-slate-100">{}</span>"#, child.name)
-                            };
-                            (sort_key, display)
-                        })
-                        .collect();
-                    entries.sort_by(|a, b| a.0.cmp(&b.0));
-                    let rendered = entries
-                        .into_iter()
-                        .map(|(_, display)| display)
-                        .collect::<Vec<_>>()
-                        .join("  ");
-                    ctx.terminal.push_html(rendered);
+                    let mut entries: Vec<&VfsNode> = children.iter().collect();
+                    entries.sort_by(|a, b| a.name.cmp(&b.name));
+                    let rendered = html! {
+                        <div class="grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-x-2">
+                            { for entries.into_iter().map(|child| {
+                                let class = if child.kind == VfsKind::Directory {
+                                    "text-sky-300"
+                                } else {
+                                    "text-slate-100"
+                                };
+                                let label = if child.kind == VfsKind::Directory {
+                                    format!("{}/", child.name)
+                                } else {
+                                    child.name.clone()
+                                };
+                                html! {
+                                    <span class={class}>{label}</span>
+                                }
+                            }) }
+                        </div>
+                    };
+                    ctx.terminal.push_component(rendered);
                 }
                 _ => ctx.terminal.push_error("ls: empty directory"),
             },
