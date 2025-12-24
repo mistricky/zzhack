@@ -4,12 +4,19 @@ use shell_parser::integration::{CommandInfo, ExecutableCommand};
 
 #[derive(Parser, Debug, Default)]
 #[command(name = "clear", about = "Clear the terminal")]
-pub struct ClearCommand;
+pub struct ClearCommand {
+    #[arg(short = 'l', long = "last", help = "Clear the last output")]
+    last: bool,
+}
 
 impl ExecutableCommand<CommandContext> for ClearCommand {
     fn run(&self, args: &[String], ctx: &CommandContext) -> Result<(), String> {
-        let _ = parse_cli::<ClearCommand>(args, ctx, self.command_name());
-        ctx.terminal.clear();
+        let Some(cli) = parse_cli::<ClearCommand>(args, ctx, self.command_name()) else {
+            return Ok(());
+        };
+
+        ctx.terminal.clear(cli.last);
+
         Ok(())
     }
 }

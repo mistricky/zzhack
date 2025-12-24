@@ -2,16 +2,16 @@ use crate::types::TermLine;
 use std::rc::Rc;
 use yew::Reducible;
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct TerminalState {
     pub lines: Vec<TermLine>,
     pub cwd: Vec<String>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TerminalAction {
     PushLine(TermLine),
-    ClearLines,
+    ClearLines(bool),
     SetCwd(Vec<String>),
 }
 
@@ -28,10 +28,21 @@ impl Reducible for TerminalState {
                     cwd: self.cwd.clone(),
                 })
             }
-            TerminalAction::ClearLines => Rc::new(Self {
-                lines: Vec::new(),
-                cwd: self.cwd.clone(),
-            }),
+            TerminalAction::ClearLines(clear_last_line) => {
+                let lines = if clear_last_line {
+                    let mut lines = self.lines.clone();
+
+                    lines.truncate(lines.len() - 2);
+                    lines
+                } else {
+                    vec![]
+                };
+
+                Rc::new(Self {
+                    lines,
+                    cwd: self.cwd.clone(),
+                })
+            }
             TerminalAction::SetCwd(cwd) => Rc::new(Self {
                 lines: self.lines.clone(),
                 cwd,

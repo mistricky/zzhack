@@ -1,6 +1,6 @@
 use yew::Html;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum OutputKind {
     Text,
     Html,
@@ -8,7 +8,7 @@ pub enum OutputKind {
     Component,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TermLine {
     pub body: String,
     pub accent: bool,

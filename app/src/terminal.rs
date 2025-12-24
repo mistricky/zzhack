@@ -11,7 +11,7 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::{Rc, Weak};
 use wasm_bindgen_futures::spawn_local;
-use yew::UseReducerHandle;
+use yew::{html, UseReducerHandle};
 
 struct TerminalCore {
     state: UseReducerHandle<TerminalState>,
@@ -55,16 +55,9 @@ impl Terminal {
     }
 
     pub fn process_command(&self, trimmed: String) {
-        self.push_line(TermLine {
-            body: format!(
-                r#"<div class="text-sm mt-4 text-gray-600">{}</div>"#,
-                trimmed.clone()
-            ),
-            accent: false,
-            kind: OutputKind::Html,
-            node: None,
-        });
-
+        self.push_component(
+            html! {<div class="text-sm mt-4 text-gray-600">{trimmed.clone()}</div>},
+        );
         self.history().borrow_mut().push(trimmed.clone());
 
         self.execute_command(&trimmed);
@@ -172,8 +165,10 @@ impl TerminalHandle {
         });
     }
 
-    pub fn clear(&self) {
-        self.inner.state.dispatch(TerminalAction::ClearLines);
+    pub fn clear(&self, clear_last_line: bool) {
+        self.inner
+            .state
+            .dispatch(TerminalAction::ClearLines(clear_last_line));
     }
 
     pub fn cwd(&self) -> Vec<String> {

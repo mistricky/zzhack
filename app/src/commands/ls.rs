@@ -40,7 +40,7 @@ impl ExecutableCommand<CommandContext> for LsCommand {
                         <div class="grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-x-2">
                             { for entries.into_iter().map(|child| {
                                 let class = if child.kind == VfsKind::Directory {
-                                    "text-sky-300"
+                                    "text-emerald-400 font-bold"
                                 } else {
                                     "text-slate-100"
                                 };
