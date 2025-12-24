@@ -109,7 +109,7 @@ pub fn code_block(props: &CodeBlockProps) -> Html {
         <div class="group relative my-4">
             <button
                 type="button"
-                class="absolute right-3 text-xs top-3 rounded-lg border border-white/10 bg-white/5 z-10 p-2 text-slate-200 opacity-0 pointer-events-none transition hover:bg-white/10 group-hover:opacity-100 group-hover:pointer-events-auto [&_svg]:h-3.5 [&_svg]:w-3.5"
+                class="absolute backdrop-blur-sm right-3 text-xs top-3 rounded-lg border border-white/10 bg-white/5 z-10 p-2 text-slate-200 opacity-0 pointer-events-none transition hover:bg-white/10 group-hover:opacity-100 group-hover:pointer-events-auto [&_svg]:h-3.5 [&_svg]:w-3.5"
                 aria-label="Copy code"
                 onclick={on_copy}
             >
