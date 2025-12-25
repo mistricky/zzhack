@@ -24,9 +24,10 @@ impl ExecutableCommand<CommandContext> for DuCommand {
                 ctx.terminal
                     .push_text(format!("{} => {} bytes", format_path(&path), bytes));
             }
-            None => ctx
-                .terminal
-                .push_error(format!("du: {}: not found", format_path(&path))),
+            None => {
+                ctx.terminal
+                    .push_error(format!("du: {}: not found", format_path(&path)));
+            }
         }
         Ok(())
     }

@@ -60,11 +60,16 @@ async fn run_boa(cli: BoaCommand, ctx: CommandContext) {
     let mut boa_ctx = Context::default();
     match boa_ctx.eval(Source::from_bytes(source.as_bytes())) {
         Ok(value) => match value.to_string(&mut boa_ctx) {
-            Ok(out) => ctx.terminal.push_text(out.to_std_string_escaped()),
-            Err(err) => ctx
-                .terminal
-                .push_error(format!("boa: failed to stringify result: {err}")),
+            Ok(out) => {
+                ctx.terminal.push_text(out.to_std_string_escaped());
+            }
+            Err(err) => {
+                ctx.terminal
+                    .push_error(format!("boa: failed to stringify result: {err}"));
+            }
         },
-        Err(err) => ctx.terminal.push_error(format!("boa: {err}")),
-    }
+        Err(err) => {
+            ctx.terminal.push_error(format!("boa: {err}"));
+        }
+    };
 }

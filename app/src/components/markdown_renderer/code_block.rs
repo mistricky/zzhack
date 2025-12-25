@@ -5,6 +5,7 @@ use wasm_bindgen_futures::{spawn_local, JsFuture};
 use web_sys::window;
 use yew::prelude::*;
 
+use crate::components::SVGIcon;
 use crate::highlight_service::HighlightService;
 
 #[derive(Properties, PartialEq)]
@@ -100,10 +101,8 @@ pub fn code_block(props: &CodeBlockProps) -> Html {
             });
         })
     };
-    let copy_icon =
-        Html::from_html_unchecked(AttrValue::from(include_str!("../../icons/copy.svg")));
-    let check_icon =
-        Html::from_html_unchecked(AttrValue::from(include_str!("../../icons/check.svg")));
+    let copy_icon = html! { <SVGIcon src={include_str!("../../icons/copy.svg")} /> };
+    let check_icon = html! { <SVGIcon src={include_str!("../../icons/check.svg")} /> };
 
     html! {
         <div class="group relative my-4">

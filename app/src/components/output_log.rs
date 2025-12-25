@@ -11,12 +11,12 @@ pub struct OutputLogProps {
 pub fn output_log(props: &OutputLogProps) -> Html {
     html! {
         <div class="space-y-1 font-mono text-base sm:text-sm text-slate-100">
-            { for props.lines.iter().enumerate().map(|(idx, line)| render_line(idx, line)) }
+            { for props.lines.iter().map(render_line) }
         </div>
     }
 }
 
-fn render_line(idx: usize, line: &TermLine) -> Html {
+fn render_line(line: &TermLine) -> Html {
     let content = match line.kind {
         OutputKind::Text => html! { &line.body },
         OutputKind::Html => Html::from_html_unchecked(AttrValue::from(line.body.clone())),
@@ -36,7 +36,7 @@ fn render_line(idx: usize, line: &TermLine) -> Html {
     };
 
     html! {
-        <div class="output-log leading-relaxed flex gap-2 w-full" key={idx.to_string()}>
+        <div class="output-log leading-relaxed flex gap-2 w-full" key={line.id.to_string()}>
             <span class={classes!(text_class, "break-words", "w-full")}>{ content }</span>
         </div>
     }

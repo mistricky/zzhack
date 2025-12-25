@@ -58,6 +58,8 @@ async fn run_eval(cli: EvalCommand, ctx: CommandContext) {
             }
             ctx.terminal.execute_command(script);
         }
-        Err(err) => ctx.terminal.push_error(format!("eval: {err}")),
+        Err(err) => {
+            ctx.terminal.push_error(format!("eval: {err}"));
+        }
     }
 }

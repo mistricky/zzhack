@@ -10,6 +10,7 @@ use shell_parser::{with_cli, CliRunner, CommandInvocation, ScriptResult, ShellPa
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::{Rc, Weak};
+use uuid::Uuid;
 use wasm_bindgen_futures::spawn_local;
 use yew::{html, UseReducerHandle};
 
@@ -125,50 +126,41 @@ impl TerminalHandle {
         Ok(runner)
     }
 
-    pub fn push_line(&self, line: TermLine) {
+    pub fn push_line(&self, line: TermLine) -> Uuid {
+        let id = line.id;
         self.inner.state.dispatch(TerminalAction::PushLine(line));
+        id
     }
 
-    pub fn push_text(&self, body: impl Into<String>) {
-        self.push_line(TermLine {
-            body: body.into(),
-            accent: false,
-            kind: OutputKind::Text,
-            node: None,
-        });
+    pub fn push_text(&self, body: impl Into<String>) -> Uuid {
+        self.push_line(TermLine::new(body, false, OutputKind::Text, None))
     }
 
-    pub fn push_error(&self, body: impl Into<String>) {
-        self.push_line(TermLine {
-            body: body.into(),
-            accent: true,
-            kind: OutputKind::Error,
-            node: None,
-        });
+    pub fn push_error(&self, body: impl Into<String>) -> Uuid {
+        self.push_line(TermLine::new(body, true, OutputKind::Error, None))
     }
 
-    pub fn push_html(&self, body: impl Into<String>) {
-        self.push_line(TermLine {
-            body: body.into(),
-            accent: false,
-            kind: OutputKind::Html,
-            node: None,
-        });
+    pub fn push_html(&self, body: impl Into<String>) -> Uuid {
+        self.push_line(TermLine::new(body, false, OutputKind::Html, None))
     }
 
-    pub fn push_component(&self, node: yew::Html) {
-        self.push_line(TermLine {
-            body: String::new(),
-            accent: false,
-            kind: OutputKind::Component,
-            node: Some(node),
-        });
+    pub fn push_component(&self, node: yew::Html) -> Uuid {
+        self.push_line(TermLine::new(
+            String::new(),
+            false,
+            OutputKind::Component,
+            Some(node),
+        ))
     }
 
-    pub fn clear(&self, clear_last_line: bool) {
+    pub fn clear(&self, clear_last_nth: Option<usize>) {
         self.inner
             .state
-            .dispatch(TerminalAction::ClearLines(clear_last_line));
+            .dispatch(TerminalAction::ClearLines(clear_last_nth));
+    }
+
+    pub fn remove(&self, id: Uuid) {
+        self.inner.state.dispatch(TerminalAction::RemoveLine(id));
     }
 
     pub fn cwd(&self) -> Vec<String> {

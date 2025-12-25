@@ -1,9 +1,9 @@
 use crate::commands::fetch::fetch_text_with_cache;
 use crate::commands::{parse_cli, CommandContext};
+use crate::utils::run_async;
 use crate::vfs_data::{find_node, format_path, resolve_path, VfsKind};
 use micro_cli::Parser;
 use shell_parser::integration::{CommandInfo, ExecutableCommand};
-use wasm_bindgen_futures::spawn_local;
 use yew::html;
 
 #[derive(Parser, Debug, Default)]
@@ -19,7 +19,7 @@ impl ExecutableCommand<CommandContext> for CatCommand {
             return Ok(());
         };
         let ctx = ctx.clone();
-        spawn_local(async move {
+        run_async(ctx.clone(), async move {
             run_cat(cli, ctx).await;
         });
         Ok(())
@@ -51,9 +51,13 @@ async fn run_cat(cli: CatCommand, ctx: CommandContext) {
     let uri = format!("/data/{}", path.join("/"));
 
     match fetch_text_with_cache(&uri, &cache).await {
-        Ok(text) => ctx.terminal.push_component(html! {
-            <span class="whitespace-break-spaces">{text}</span>
-        }),
-        Err(err) => ctx.terminal.push_error(format!("cat: {err}")),
+        Ok(text) => {
+            ctx.terminal.push_component(html! {
+                <span class="whitespace-break-spaces">{text}</span>
+            });
+        }
+        Err(err) => {
+            ctx.terminal.push_error(format!("cat: {err}"));
+        }
     }
 }

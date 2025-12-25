@@ -138,7 +138,9 @@ async fn run_render(cli: RenderCommand, ctx: CommandContext) {
             };
             ctx.terminal.push_component(node);
         }
-        Err(err) => ctx.terminal.push_error(format!("render: {err}")),
+        Err(err) => {
+            ctx.terminal.push_error(format!("render: {err}"));
+        }
     }
 }
 

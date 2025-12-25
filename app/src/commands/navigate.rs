@@ -24,7 +24,9 @@ impl ExecutableCommand<CommandContext> for NavigateCommand {
             terminal.execute_command(&format!("history --push {path}"));
             match terminal.to_terminal() {
                 Some(full_terminal) => run_route(&path, full_terminal),
-                None => terminal.push_error("navigate: unable to execute route"),
+                None => {
+                    terminal.push_error("navigate: unable to execute route");
+                }
             }
         });
 

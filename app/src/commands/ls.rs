@@ -57,15 +57,20 @@ impl ExecutableCommand<CommandContext> for LsCommand {
                     };
                     ctx.terminal.push_component(rendered);
                 }
-                _ => ctx.terminal.push_error("ls: empty directory"),
+                _ => {
+                    ctx.terminal.push_error("ls: empty directory");
+                }
             },
-            Some(_) => ctx
-                .terminal
-                .push_error(format!("ls: {}: not a directory", format_path(&path))),
-            None => ctx.terminal.push_error(format!(
-                "ls: {}: no such file or directory",
-                format_path(&path)
-            )),
+            Some(_) => {
+                ctx.terminal
+                    .push_error(format!("ls: {}: not a directory", format_path(&path)));
+            }
+            None => {
+                ctx.terminal.push_error(format!(
+                    "ls: {}: no such file or directory",
+                    format_path(&path)
+                ));
+            }
         }
         Ok(())
     }

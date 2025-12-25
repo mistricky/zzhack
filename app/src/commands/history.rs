@@ -99,8 +99,12 @@ impl ExecutableCommand<CommandContext> for HistoryCommand {
         };
 
         match result {
-            Ok(message) => ctx.terminal.push_text(format!("history: {message}")),
-            Err(err) => ctx.terminal.push_error(err),
+            Ok(message) => {
+                ctx.terminal.push_text(format!("history: {message}"));
+            }
+            Err(err) => {
+                ctx.terminal.push_error(err);
+            }
         }
 
         Ok(())

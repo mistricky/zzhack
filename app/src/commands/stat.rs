@@ -19,11 +19,12 @@ impl ExecutableCommand<CommandContext> for StatCommand {
         match find_node(&ctx.vfs, &path) {
             Some(node) => {
                 ctx.terminal
-                    .push_text(format!("{} => {}", format_path(&path), node_summary(node)))
+                    .push_text(format!("{} => {}", format_path(&path), node_summary(node)));
             }
-            None => ctx
-                .terminal
-                .push_error(format!("stat: {}: not found", format_path(&path))),
+            None => {
+                ctx.terminal
+                    .push_error(format!("stat: {}: not found", format_path(&path)));
+            }
         }
         Ok(())
     }

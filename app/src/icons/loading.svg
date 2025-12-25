@@ -1,0 +1,120 @@
+<svg width="80" height="58" viewBox="0 0 80 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .shape {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .bounce-left {
+      animation: bounce-left 7s cubic-bezier(0.2, 1.8, 0.4, 1) infinite;
+    }
+
+    .bounce-mid {
+      animation: bounce-mid 7s cubic-bezier(0.2, 1.8, 0.4, 1) infinite;
+    }
+
+    .bounce-right {
+      animation: bounce-right 7s cubic-bezier(0.2, 1.8, 0.4, 1) infinite;
+    }
+
+    .morph-shrink {
+      animation: morph-shrink 6s ease-in-out infinite;
+    }
+
+    .morph-grow {
+      animation: morph-grow 6s ease-in-out infinite;
+    }
+
+    @keyframes bounce-left {
+      0%, 6% { transform: translateY(0); }
+      11% { transform: translateY(-6px); }
+      17% { transform: translateY(0); }
+      20% { transform: translateY(-2px); }
+      23% { transform: translateY(0); }
+      30%, 36% { transform: translateY(0); }
+      41% { transform: translateY(-6px); }
+      47% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+      53% { transform: translateY(0); }
+      60%, 100% { transform: translateY(0); }
+    }
+
+    @keyframes bounce-mid {
+      0%, 18% { transform: translateY(0); }
+      23% { transform: translateY(-6px); }
+      29% { transform: translateY(0); }
+      32% { transform: translateY(-2px); }
+      35% { transform: translateY(0); }
+      42%, 48% { transform: translateY(0); }
+      53% { transform: translateY(-6px); }
+      59% { transform: translateY(0); }
+      62% { transform: translateY(-2px); }
+      65% { transform: translateY(0); }
+      72%, 100% { transform: translateY(0); }
+    }
+
+    @keyframes bounce-right {
+      0%, 30% { transform: translateY(0); }
+      35% { transform: translateY(-6px); }
+      41% { transform: translateY(0); }
+      44% { transform: translateY(-2px); }
+      47% { transform: translateY(0); }
+      54%, 60% { transform: translateY(0); }
+      65% { transform: translateY(-6px); }
+      71% { transform: translateY(0); }
+      74% { transform: translateY(-2px); }
+      77% { transform: translateY(0); }
+      84%, 100% { transform: translateY(0); }
+    }
+
+    @keyframes morph-shrink {
+      0%, 10% { transform: scale(1); }
+      20%, 60% { transform: scale(0.2); }
+      70%, 100% { transform: scale(1); }
+    }
+
+    @keyframes morph-grow {
+      0%, 10% { transform: scale(0.2); }
+      20%, 60% { transform: scale(1); }
+      70%, 100% { transform: scale(0.2); }
+    }
+  </style>
+  <g transform="translate(18 14.5) scale(0.85)">
+    <g class="shape bounce-left">
+      <circle cx="6" cy="14.5" r="6" fill="#70A1FF"/>
+    </g>
+    <g class="shape bounce-mid">
+      <rect
+        x="18"
+        y="8.5"
+        width="12"
+        height="12"
+        rx="3"
+        ry="3"
+        fill="#FF7979"
+        class="shape morph-shrink"
+      />
+      <circle
+        cx="24"
+        cy="14.5"
+        r="6"
+        fill="#FF7979"
+        class="shape morph-grow"
+      />
+    </g>
+    <g class="shape bounce-right">
+      <path
+        d="M42 8.5L36 20.5H48L42 8.5Z"
+        fill="#FFBE76"
+        class="shape morph-shrink"
+      />
+      <circle
+        cx="42"
+        cy="14.5"
+        r="6"
+        fill="#FFBE76"
+        class="shape morph-grow"
+      />
+    </g>
+  </g>
+</svg>
