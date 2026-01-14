@@ -11,7 +11,7 @@
     <link data-trunk rel="rust" data-bin="highlight_worker" data-type="worker" />
   </head>
   <body style="margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;background:#000000;color:#e2e8f0;">
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+    <div id="boot-loading" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
       <svg width="64" height="46" viewBox="0 0 40 29" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Loading logo" style="display:block;overflow:visible;">
         <style>
           .shape {
@@ -65,5 +65,37 @@
         </g>
       </svg>
     </div>
+    <div id="wasm-unsupported" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:16px;max-width:720px;padding:24px;text-align:center;">
+      <svg width="64" height="46" viewBox="0 0 40 29" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="zzhack logo" style="display:block;">
+        <rect x="11.291" width="20" height="20" rx="5" transform="rotate(6.98839 11.291 0)" fill="#FF7979"/>
+        <circle cx="8" cy="9.14258" r="8" fill="#70A1FF"/>
+        <path d="M25.5943 8.15645C25.7834 7.35408 26.8075 7.11219 27.3355 7.74517L38.9501 21.6672C39.4233 22.2345 39.1392 23.1014 38.422 23.2786L22.607 27.1853C21.8811 27.3646 21.2224 26.7129 21.3938 25.9851L25.5943 8.15645Z" fill="#FFBE76"/>
+      </svg>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:22px;font-weight:600;">WebAssembly not supported</div>
+        <div style="font-size:15px;line-height:1.6;color:#cbd5f5;">
+          This browser can't run the app because WebAssembly is disabled or unavailable.
+        </div>
+      </div>
+      <div style="font-size:14px;line-height:1.6;color:#94a3b8;">
+        Try updating your browser or switch to a recent version of Chrome, Edge, Firefox, or Safari.
+      </div>
+    </div>
+    <script>
+      (function () {
+        var supported = typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
+        if (supported) {
+          return;
+        }
+        var loading = document.getElementById('boot-loading');
+        if (loading) {
+          loading.style.display = 'none';
+        }
+        var fallback = document.getElementById('wasm-unsupported');
+        if (fallback) {
+          fallback.style.display = 'flex';
+        }
+      })();
+    </script>
   </body>
 </html>
