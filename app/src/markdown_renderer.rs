@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use yew::prelude::*;
 
 use crate::components::markdown_renderer::{
-    Blockquote, CodeBlock, Link, MathBlock, MathInline, OrderedList, UnorderedList,
+    Blockquote, CodeBlock, Image, Link, MathBlock, MathInline, OrderedList, UnorderedList,
 };
 
 pub trait MarkdownFilter {
@@ -41,9 +41,13 @@ impl MarkdownRenderer {
     }
 
     pub fn render(&self, source: &str) -> Html {
+        self.render_with_base_path(source, None)
+    }
+
+    pub fn render_with_base_path(&self, source: &str, base_dir: Option<&str>) -> Html {
         let processed = self.apply_filters(source);
         let events: Vec<Event> = Parser::new_ext(processed.as_ref(), self.options).collect();
-        let html_nodes = render_events(events);
+        let html_nodes = render_events(events, base_dir);
 
         html! { <>{ for html_nodes }</> }
     }
@@ -102,7 +106,7 @@ fn events_to_html(events: Vec<Event<'_>>) -> Html {
     Html::from_html_unchecked(AttrValue::from(html_output))
 }
 
-fn render_events<'a>(events: Vec<Event<'a>>) -> Vec<Html> {
+fn render_events<'a>(events: Vec<Event<'a>>, base_dir: Option<&str>) -> Vec<Html> {
     let mut nodes: Vec<Html> = Vec::new();
     let mut buffer: Vec<Event<'a>> = Vec::new();
     let mut iter = events.into_iter();
@@ -133,7 +137,7 @@ fn render_events<'a>(events: Vec<Event<'a>>) -> Vec<Html> {
                     buffer = Vec::new();
                 }
                 let list_events = collect_list_events(&mut iter);
-                nodes.push(render_list_component(kind, list_events));
+                nodes.push(render_list_component(kind, list_events, base_dir));
             }
             Event::Start(Tag::BlockQuote) => {
                 if !buffer.is_empty() {
@@ -141,7 +145,7 @@ fn render_events<'a>(events: Vec<Event<'a>>) -> Vec<Html> {
                     buffer = Vec::new();
                 }
                 let quote_events = collect_blockquote_events(&mut iter);
-                let quote_children = render_events(quote_events);
+                let quote_children = render_events(quote_events, base_dir);
                 nodes.push(html! { <Blockquote>{ for quote_children }</Blockquote> });
             }
             Event::Start(Tag::Link(_link_type, dest, title)) => {
@@ -150,11 +154,27 @@ fn render_events<'a>(events: Vec<Event<'a>>) -> Vec<Html> {
                     buffer = Vec::new();
                 }
                 let link_events = collect_link_events(&mut iter);
-                let link_children = render_events(link_events);
+                let link_children = render_events(link_events, base_dir);
                 nodes.push(html! {
                     <Link href={dest.to_string()} title={title.to_string()}>
                         { for link_children }
                     </Link>
+                });
+            }
+            Event::Start(Tag::Image(_link_type, dest, title)) => {
+                if !buffer.is_empty() {
+                    nodes.push(events_to_html(buffer));
+                    buffer = Vec::new();
+                }
+                let image_events = collect_image_events(&mut iter);
+                let alt_text = extract_alt_text(&image_events);
+                let rewritten = rewrite_image_src(dest.as_ref(), base_dir);
+                nodes.push(html! {
+                    <Image
+                        src={rewritten}
+                        alt={alt_text}
+                        title={title.to_string()}
+                    />
                 });
             }
             Event::Start(Tag::CodeBlock(kind)) => {
@@ -276,13 +296,17 @@ where
     collected
 }
 
-fn render_list_component(kind: Option<u64>, events: Vec<Event<'_>>) -> Html {
+fn render_list_component(
+    kind: Option<u64>,
+    events: Vec<Event<'_>>,
+    base_dir: Option<&str>,
+) -> Html {
     let mut items: Vec<Html> = Vec::new();
     let mut iter = events.into_iter();
     while let Some(event) = iter.next() {
         if matches!(event, Event::Start(Tag::Item)) {
             let item_events = collect_item_events(&mut iter);
-            let item_nodes = render_events(item_events);
+            let item_nodes = render_events(item_events, base_dir);
             items.push(html! { <>{ for item_nodes }</> });
         }
     }
@@ -313,6 +337,40 @@ where
         collected.push(event);
     }
     collected
+}
+
+fn collect_image_events<'a, I>(events: &mut I) -> Vec<Event<'a>>
+where
+    I: Iterator<Item = Event<'a>>,
+{
+    let mut collected = Vec::new();
+    let mut depth = 1;
+    while let Some(event) = events.next() {
+        match &event {
+            Event::Start(Tag::Image(..)) => depth += 1,
+            Event::End(Tag::Image(..)) => {
+                depth -= 1;
+                if depth == 0 {
+                    break;
+                }
+            }
+            _ => {}
+        }
+        collected.push(event);
+    }
+    collected
+}
+
+fn extract_alt_text(events: &[Event<'_>]) -> String {
+    let mut alt = String::new();
+    for event in events {
+        match event {
+            Event::Text(text) | Event::Code(text) => alt.push_str(text),
+            Event::SoftBreak | Event::HardBreak => alt.push(' '),
+            _ => {}
+        }
+    }
+    alt.trim().to_string()
 }
 
 fn collect_blockquote_events<'a, I>(events: &mut I) -> Vec<Event<'a>>
@@ -389,6 +447,48 @@ fn escape_html(input: &str) -> String {
         }
     }
     escaped
+}
+
+fn rewrite_image_src(src: &str, base_dir: Option<&str>) -> String {
+    let Some(base_dir) = base_dir else {
+        return src.to_string();
+    };
+
+    if is_absolute_or_data_url(src) {
+        return src.to_string();
+    }
+
+    let resolved = resolve_relative_path(base_dir, src);
+    format!("/data/{}", resolved)
+}
+
+fn is_absolute_or_data_url(src: &str) -> bool {
+    src.starts_with('/')
+        || src.starts_with("http://")
+        || src.starts_with("https://")
+        || src.starts_with("data:")
+        || src.starts_with("blob:")
+        || src.starts_with("mailto:")
+}
+
+fn resolve_relative_path(base_dir: &str, src: &str) -> String {
+    let mut parts: Vec<&str> = Vec::new();
+
+    if !base_dir.is_empty() {
+        parts.extend(base_dir.split('/').filter(|segment| !segment.is_empty()));
+    }
+
+    for segment in src.split('/') {
+        match segment {
+            "" | "." => {}
+            ".." => {
+                parts.pop();
+            }
+            _ => parts.push(segment),
+        }
+    }
+
+    parts.join("/")
 }
 
 enum MathSegment {

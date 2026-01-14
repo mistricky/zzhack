@@ -116,7 +116,12 @@ async fn run_render(cli: RenderCommand, ctx: CommandContext) {
 
     match fetch_text_with_cache(&uri, &cache).await {
         Ok(content) => {
-            let rendered = MarkdownRenderer::new().render(&content);
+            let base_dir = if path.len() > 1 {
+                path[..path.len() - 1].join("/")
+            } else {
+                String::new()
+            };
+            let rendered = MarkdownRenderer::new().render_with_base_path(&content, Some(&base_dir));
             let rendered = if cli.typewriter_style {
                 html! {<Typewriter content={rendered} delay_ms={cli.typewriter_delay.unwrap_or(10)} />}
             } else {
